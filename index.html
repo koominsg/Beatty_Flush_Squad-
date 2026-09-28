@@ -1,3 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<!-- Firebase (database) + app config -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<script src="backend.js"></script>
 <title>Flush Squad Command</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -232,6 +243,8 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
+</head>
+<body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
@@ -241,7 +254,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     <div class="me" hidden><label for="myName">You are</label><input id="myName" placeholder="e.g. Mr Tan" autocomplete="name"></div>
   </header>
 
-  <div id="offline" class="offline" hidden>Live sync isn't available in this view, so nothing you do here will be shared. Open the published page while signed in to use it with your colleagues.</div>
+  <div id="offline" class="offline" hidden>Can't connect to the database, so nothing you do here will be shared. Check that config.js has your Firebase settings (see README.md).</div>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="board" aria-selected="true">Status Board</button>
@@ -387,6 +400,12 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
       </div>
     </div>
     <div class="card">
+      <p class="eyebrow">Import data</p>
+      <div class="row" style="margin-bottom:22px">
+        <button class="btn ghost" type="button" id="importBtn">Import data file (.json)</button>
+        <span class="muted" style="font-size:.85rem">Loads venues, class lists, invigilation schedules and settings from a Flush Squad data file. Existing venues with the same ID are replaced.</span>
+        <input type="file" id="importIn" accept=".json,application/json" hidden>
+      </div>
       <p class="eyebrow">Settings</p>
       <form class="settings" id="settingsForm" style="margin-bottom:22px">
         <label for="overdueMin">Warn everyone when an escort passes</label>
@@ -1104,6 +1123,21 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     catch(e){ if(e?.code!=="declined") toast("Couldn't save the file.", "var(--red)"); }
   });
 
+  // ---------- import data file ----------
+  $("#importBtn").addEventListener("click", ()=>{ if(!S.db){ toast("Not connected to the database.", "var(--red)"); return; } $("#importIn").value=""; $("#importIn").click(); });
+  $("#importIn").addEventListener("change", async ()=>{
+    const f=$("#importIn").files[0]; if(!f) return;
+    let data; try{ data=JSON.parse(await f.text()); }catch{ toast("That file isn't valid JSON.", "var(--red)"); return; }
+    const cols=["venues","classlists","settings"].filter(c=>data[c] && typeof data[c]==="object");
+    if(!cols.length){ toast("No venues, class lists or settings found in that file.", "var(--red)"); return; }
+    $("#importBtn").disabled=true; let n=0, fail=0;
+    for(const c of cols) for(const [id,doc] of Object.entries(data[c])){
+      try{ await S.db.doc(c+"/"+id).set(doc); n++; }catch{ fail++; }
+    }
+    $("#importBtn").disabled=false;
+    toast(fail ? `Imported ${n} records; ${fail} failed.` : `Imported ${n} records.`, fail?"var(--amber)":"var(--green)", 5000);
+  });
+
   // ---------- live data ----------
   renderAll(); tick();
   (async ()=>{
@@ -1148,3 +1182,6 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
   })();
 })();
 </script>
+
+</body>
+</html>
