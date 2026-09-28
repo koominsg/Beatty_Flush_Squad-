@@ -4,10 +4,10 @@
  * These values are not secret; access is controlled by firestore.rules.
  */
 window.FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC5YviiSmTCDLbFRMqRwoJ89Ska3bSpfKc",
+  authDomain: "flush-squad.firebaseapp.com",
+  projectId: "flush-squad",
+  storageBucket: "flush-squad.firebasestorage.app",
+  messagingSenderId: "861115008728",
+  appId: "1:861115008728:web:366bc31dffdbcdc4bdb9ad"
 };
