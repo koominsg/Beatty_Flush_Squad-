@@ -374,7 +374,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     <div class="card" style="display:grid;gap:14px">
       <div class="row" style="justify-content:space-between">
         <div class="row"><label for="logDate" class="muted">Day</label><input type="date" id="logDate"></div>
-        <div class="row"><button class="btn ghost" id="csvBtn">Download CSV</button><button class="btn danger" id="flushBtn">🚽 The Great Flush</button></div>
+        <div class="row"><button class="btn ghost" id="importBtn" title="Load venues, class lists and invigilation schedules from a .json data file">⬆ Import data (.json)</button><input type="file" id="importIn" accept=".json,application/json" hidden><button class="btn ghost" id="csvBtn">Download CSV</button><button class="btn danger" id="flushBtn">🚽 The Great Flush</button></div>
       </div>
       <div class="kpis">
         <div class="kpi"><b id="kTotal" class="mono">0</b><span>Requests</span></div>
@@ -400,12 +400,6 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
       </div>
     </div>
     <div class="card">
-      <p class="eyebrow">Import data</p>
-      <div class="row" style="margin-bottom:22px">
-        <button class="btn ghost" type="button" id="importBtn">Import data file (.json)</button>
-        <span class="muted" style="font-size:.85rem">Loads venues, class lists, invigilation schedules and settings from a Flush Squad data file. Existing venues with the same ID are replaced.</span>
-        <input type="file" id="importIn" accept=".json,application/json" hidden>
-      </div>
       <p class="eyebrow">Settings</p>
       <form class="settings" id="settingsForm" style="margin-bottom:22px">
         <label for="overdueMin">Warn everyone when an escort passes</label>
@@ -1130,12 +1124,13 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     let data; try{ data=JSON.parse(await f.text()); }catch{ toast("That file isn't valid JSON.", "var(--red)"); return; }
     const cols=["venues","classlists","settings"].filter(c=>data[c] && typeof data[c]==="object");
     if(!cols.length){ toast("No venues, class lists or settings found in that file.", "var(--red)"); return; }
-    $("#importBtn").disabled=true; let n=0, fail=0;
+    const btn=$("#importBtn"), label=btn.textContent; btn.disabled=true; btn.textContent="Importing…"; let n=0, fail=0;
     for(const c of cols) for(const [id,doc] of Object.entries(data[c])){
       try{ await S.db.doc(c+"/"+id).set(doc); n++; }catch{ fail++; }
     }
-    $("#importBtn").disabled=false;
-    toast(fail ? `Imported ${n} records; ${fail} failed.` : `Imported ${n} records.`, fail?"var(--amber)":"var(--green)", 5000);
+    btn.disabled=false; btn.textContent=label;
+    const nv=Object.keys(data.venues||{}).length, nl=Object.keys(data.classlists||{}).length;
+    toast(fail ? `Imported ${n} records; ${fail} failed. Try again.` : `Imported ${nv} venues and ${nl} class lists.`, fail?"var(--amber)":"var(--green)", 5000);
   });
 
   // ---------- live data ----------
