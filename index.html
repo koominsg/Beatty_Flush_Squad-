@@ -235,6 +235,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
 @media (max-width:760px){body.tv .board{grid-template-columns:1fr;justify-items:center;text-align:center}body.tv .lamp{width:110px;height:110px}body.tv .light{width:150px}}
 
 /* toasts */
+.sound-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:55;border:0;border-radius:999px;padding:12px 18px;background:var(--amber);color:#1b1300;font:inherit;font-weight:700;box-shadow:var(--shadow);cursor:pointer;max-width:calc(100vw - 32px)}
 #toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:50;max-width:min(360px,calc(100vw - 32px))}
 .toast{background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:10px;box-shadow:var(--shadow);font-size:.92rem;display:flex;gap:10px;align-items:flex-start;animation:tin .25s ease-out}
 .toast i{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px}
@@ -421,6 +422,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
   </section>
 </div>
 <div id="toasts" aria-live="polite"></div>
+<button id="soundPill" class="sound-pill" hidden>🔇 Tap here to turn on alert sounds</button>
 <div class="overlay" id="whoOverlay" hidden>
   <div class="card sheet" role="dialog" aria-modal="true" aria-labelledby="whoTitle">
     <p class="eyebrow" id="whoEyebrow">Confirm request</p>
@@ -557,7 +559,28 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     while($("#toasts").children.length>4) $("#toasts").firstChild.remove();
   }
   let actx=null;
-  function unlockAudio(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); }catch{} }
+  let silentEl=null;
+  function unlockAudio(){
+    try{
+      // iPhone/iPad: play through the silent switch like a media app
+      try{ if(navigator.audioSession) navigator.audioSession.type="playback"; }catch{}
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state!=="running") actx.resume();
+      // a tiny silent blip inside the tap is what really unlocks sound on phones
+      const b=actx.createBuffer(1,1,22050), s=actx.createBufferSource(); s.buffer=b; s.connect(actx.destination); s.start(0);
+      if(!silentEl){
+        try{
+          const sr=8000, n=800, buf=new ArrayBuffer(44+n), v=new DataView(buf), w=(o,str)=>{ for(let i=0;i<str.length;i++) v.setUint8(o+i,str.charCodeAt(i)); };
+          w(0,"RIFF"); v.setUint32(4,36+n,true); w(8,"WAVE"); w(12,"fmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+          v.setUint32(24,sr,true); v.setUint32(28,sr,true); v.setUint16(32,1,true); v.setUint16(34,8,true); w(36,"data"); v.setUint32(40,n,true);
+          for(let i=0;i<n;i++) v.setUint8(44+i,128);
+          silentEl=new Audio(URL.createObjectURL(new Blob([buf],{type:"audio/wav"}))); silentEl.setAttribute("playsinline",""); silentEl.volume=0.01;
+        }catch{}
+      }
+      try{ silentEl && silentEl.play().catch(()=>{}); }catch{}
+    }catch{}
+    setTimeout(()=>{ try{ renderSoundBtn(); }catch{} }, 300);
+  }
   function chime(notes=[880,1175,880]){
     if(!actx || !soundOn) return;
     try{
@@ -568,13 +591,15 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     }catch{}
   }
   const alarm = () => chime([660,520,660,520]);
-  document.addEventListener("pointerdown", unlockAudio);
+  ["click","touchend","keydown"].forEach(ev=>document.addEventListener(ev, ()=>{ if(soundOn && !audioReady()) unlockAudio(); }, {capture:true, passive:true}));
+  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible" && actx && actx.state!=="running"){ try{ actx.resume(); }catch{} } setTimeout(()=>{ try{ renderSoundBtn(); }catch{} },300); });
   let soundOn = store.get("fsc.sound")!=="off";
   const audioReady = () => !!actx && actx.state==="running";
   function renderSoundBtn(){
     const on = soundOn && audioReady();
     $("#soundBtn").setAttribute("aria-pressed", on);
     $("#soundBtn").textContent = on ? "🔊 Sound on" : "🔇 Turn on sound";
+    $("#soundPill").hidden = !soundOn || audioReady();
   }
   $("#soundBtn").addEventListener("click", async ()=>{
     unlockAudio(); try{ await actx.resume(); }catch{}
@@ -583,6 +608,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     store.set("fsc.sound", soundOn?"on":"off"); renderSoundBtn();
   });
   setInterval(renderSoundBtn, 3000);
+  $("#soundPill").addEventListener("click", ()=>{ soundOn=true; store.set("fsc.sound","on"); unlockAudio(); setTimeout(()=>{ if(audioReady()){ chime([660,880]); toast("Sound is on. Keep this page open to hear alerts.", "var(--green)", 3500); } renderSoundBtn(); }, 250); });
   function heroSound(){
     if(!actx || !soundOn) return;
     try{
