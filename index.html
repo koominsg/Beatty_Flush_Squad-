@@ -1,0 +1,1150 @@
+<title>Flush Squad Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#EEF2F0; --surface:#FFFFFF; --surface-2:#E3E9E6; --ink:#14222B; --ink-2:#4A5A63; --line:#CBD5D1;
+  --accent:#1F5F8B; --accent-ink:#FFFFFF;
+  --red:#C8352B; --amber:#D98B0B; --green:#23874F;
+  --red-soft:#F7DEDB; --amber-soft:#FBEBCC; --green-soft:#D6EEDF;
+  --lamp-off:#2A3740; --housing:#1A262E;
+  --shadow:0 1px 2px rgba(20,34,43,.08),0 6px 20px rgba(20,34,43,.06);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F171C; --surface:#172229; --surface-2:#1F2C34; --ink:#E6EDEA; --ink-2:#9AAAB2; --line:#2C3A42;
+    --accent:#5CA4D6; --accent-ink:#0B1419;
+    --red:#EF5B4F; --amber:#F2AE2E; --green:#3DBA74;
+    --red-soft:#3A1F1C; --amber-soft:#3A2D12; --green-soft:#16301F;
+    --lamp-off:#24313A; --housing:#0A1115;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F171C; --surface:#172229; --surface-2:#1F2C34; --ink:#E6EDEA; --ink-2:#9AAAB2; --line:#2C3A42;
+  --accent:#5CA4D6; --accent-ink:#0B1419;
+  --red:#EF5B4F; --amber:#F2AE2E; --green:#3DBA74;
+  --red-soft:#3A1F1C; --amber-soft:#3A2D12; --green-soft:#16301F;
+  --lamp-off:#24313A; --housing:#0A1115;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding:0 16px 48px}
+.wrap{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* header */
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-block:18px 12px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:40px;height:40px;border-radius:10px;background:var(--housing);display:grid;place-items:center;gap:0;padding:6px 0}
+.brand-mark span{display:block;width:9px;height:9px;border-radius:50%}
+.brand h1{font-size:1.45rem;font-weight:800;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--ink-2);font-size:.85rem}
+.me{display:flex;align-items:center;gap:8px;font-size:.9rem}
+.me input{width:170px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.me label{color:var(--ink-2)}
+
+nav.tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;overflow-x:auto;margin-bottom:20px}
+nav.tabs button{flex:1 0 auto;border:0;background:transparent;padding:10px 14px;border-radius:9px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+nav.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+nav.tabs .badge{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--red);color:#fff;font-size:.75rem;line-height:20px;text-align:center}
+
+.panel{display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:700;margin:0 0 6px}
+.muted{color:var(--ink-2)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{border:0;border-radius:10px;padding:12px 18px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+.btn.big{padding:16px 22px;font-size:1.1rem;width:100%}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.go{background:var(--green);color:#fff}
+.btn.warn{background:var(--amber);color:#1b1300}
+.btn.danger{background:var(--red);color:#fff}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.check input{margin-top:4px;width:18px;height:18px;accent-color:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:.8rem;font-weight:700}
+.chip.waiting{background:var(--red-soft);color:var(--red)}
+.chip.claimed{background:var(--amber-soft);color:var(--amber)}
+.chip.done,.chip.free{background:var(--green-soft);color:var(--green)}
+.chip.busy{background:var(--amber-soft);color:var(--amber)}
+.chip.pick{border:1px solid transparent;cursor:pointer;font:inherit;font-size:.8rem;font-weight:700}
+.chip.pick:hover{border-color:currentColor}
+.chipwrap{display:inline-flex;align-items:center;border-radius:999px}
+.chipwrap.free{background:var(--green-soft);color:var(--green)} .chipwrap.busy{background:var(--amber-soft);color:var(--amber)}
+.chipwrap .chip.pick{background:transparent}
+.chip-x{border:0;background:transparent;color:inherit;font:inherit;font-size:.8rem;font-weight:700;padding:3px 10px 3px 4px;border-radius:0 999px 999px 0;opacity:.6;cursor:pointer}
+.chip-x:hover,.chip-x:focus-visible{opacity:1;color:var(--red)}
+.chipwrap.confirm{background:var(--red-soft);color:var(--ink);gap:8px;padding:3px 4px 3px 12px;font-size:.82rem}
+.mini{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:2px 10px;font:inherit;font-weight:700;font-size:.78rem;cursor:pointer}
+.mini.yes{background:var(--red);border-color:var(--red);color:#fff}
+.chip.pick.me{border-color:currentColor;box-shadow:0 0 0 2px var(--surface),0 0 0 3px currentColor}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+/* request tab */
+.search{width:100%;padding:14px 16px;font-size:1.05rem;border:2px solid var(--line);border-radius:12px;background:var(--surface)}
+.search:focus{border-color:var(--accent);outline:none}
+.venues{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:12px;max-height:340px;overflow:auto;padding:2px}
+.venue{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px}
+.venue b{display:block}
+.venue small{color:var(--ink-2)}
+strong.hl{color:var(--ink);font-weight:700}
+.roster{display:grid;gap:4px;font-size:.85rem}
+.roster div{display:flex;gap:10px;padding:4px 8px;border-radius:6px}
+.roster div .mono{flex:none;color:var(--ink-2)}
+.roster div.now{background:var(--green-soft)}
+.roster div.now .mono{color:var(--green);font-weight:700}
+.roster em{font-style:normal;color:var(--ink-2);font-size:.78rem}
+td.stack{white-space:normal;min-width:260px}
+td.stack div{white-space:nowrap}
+.venue[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:8px 14px;font-weight:700;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* request list items */
+.list{display:grid;gap:10px}
+.item{display:grid;grid-template-columns:6px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px 12px 0;overflow:hidden}
+.item .stripe{align-self:stretch;border-radius:0 4px 4px 0}
+.item.waiting .stripe{background:var(--red)}
+.item.claimed .stripe{background:var(--amber)}
+.item.done .stripe{background:var(--green)}
+.item h3{font-size:1.1rem}
+.item .meta{font-size:.85rem;color:var(--ink-2)}
+.item .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:520px){.item{grid-template-columns:6px 1fr}.item .actions{grid-column:2;justify-content:flex-start}}
+.empty{padding:18px;text-align:center;color:var(--ink-2);border:1px dashed var(--line);border-radius:12px}
+
+/* squad */
+.duty-banner{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.squad{display:flex;flex-wrap:wrap;gap:8px}
+.alert-flash{animation:flash 1s ease-in-out 3}
+@keyframes flash{50%{box-shadow:0 0 0 4px var(--red)}}
+
+/* board */
+.board{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+@media (max-width:640px){.board{grid-template-columns:1fr;justify-items:center;text-align:center}}
+.light{background:var(--housing);border-radius:28px;padding:16px;display:grid;gap:14px;width:124px}
+.lamp{width:92px;height:92px;border-radius:50%;background:var(--lamp-off);transition:background .4s,box-shadow .4s}
+.lamp.red.on{background:var(--red);box-shadow:0 0 36px 6px color-mix(in srgb,var(--red) 55%,transparent)}
+.lamp.amber.on{background:var(--amber);box-shadow:0 0 36px 6px color-mix(in srgb,var(--amber) 55%,transparent)}
+.lamp.green.on{background:var(--green);box-shadow:0 0 36px 6px color-mix(in srgb,var(--green) 55%,transparent)}
+.verdict h2{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-.02em}
+.wiggle{display:inline-block;transform-origin:50% 90%;animation:squirm 1.6s ease-in-out infinite}
+@keyframes squirm{0%,100%{transform:rotate(0) translateY(0) scale(1)}10%{transform:rotate(-12deg) translateY(-2px)}20%{transform:rotate(12deg) translateY(-2px)}30%{transform:rotate(-10deg)}40%{transform:rotate(10deg)}50%{transform:rotate(0) scale(1.12,.9)}60%{transform:scale(.95,1.08) translateY(-6px)}70%,90%{transform:rotate(0) translateY(0) scale(1)}}
+.siren{display:inline-block;animation:siren .7s steps(1) infinite,spin 1.4s linear infinite}
+@keyframes siren{0%{filter:none;opacity:1}50%{filter:hue-rotate(200deg) saturate(1.6);opacity:.75}}
+@keyframes spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+.rattle{display:inline-block;margin-left:.1em;transform-origin:50% 100%;animation:rattle .5s ease-in-out infinite}
+@keyframes rattle{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-3px,-2px) rotate(-6deg)}40%{transform:translate(3px,0) rotate(5deg)}60%{transform:translate(-2px,-4px) rotate(-4deg)}80%{transform:translate(2px,0) rotate(3deg)}}
+.throne{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:.9;margin-left:.08em}
+.crown{font-size:.45em;display:inline-block;animation:crown 1s ease-in-out infinite}
+@keyframes crown{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-5px) rotate(8deg)}}
+.verdict h2.red{color:var(--red)} .verdict h2.amber{color:var(--amber)} .verdict h2.green{color:var(--green)}
+.verdict p.lead{font-size:1.15rem;margin:.4em 0 1em}
+.stats{display:flex;gap:28px;flex-wrap:wrap}
+@media (max-width:640px){.stats{justify-content:center}}
+.stat b{display:block;font-family:var(--display);font-size:2rem;font-weight:800;line-height:1}
+.stat span{font-size:.8rem;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:640px){.legend{grid-template-columns:1fr}}
+.legend div{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:.9rem}
+.legend i{flex:none;width:14px;height:14px;border-radius:50%;margin-top:4px}
+
+/* log */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface-2);border-radius:10px;padding:12px}
+.kpi b{font-family:var(--display);font-size:1.5rem;display:block}
+.kpi span{font-size:.78rem;color:var(--ink-2)}
+input[type=date],.field{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.vlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.vtag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 10px;font-size:.85rem;background:var(--surface)}
+.vtag button{border:0;background:transparent;color:var(--ink-2);padding:2px 6px;border-radius:6px}
+.vtag button:hover{background:var(--red-soft);color:var(--red)}
+.vtag button.up{color:var(--accent);font-weight:700}
+.vtag button.up:hover{background:var(--surface-2);color:var(--accent)}
+.students{display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow:auto;padding:2px}
+.stu-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:.88rem;text-align:left}
+.stu-btn .no{font-family:var(--mono);color:var(--ink-2);margin-right:6px;font-size:.8rem}
+.stu-btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.stu-btn[aria-pressed="true"] .no{color:inherit}
+.overlay{position:fixed;inset:0;background:rgba(10,17,21,.55);display:grid;place-items:center;padding:16px;z-index:60}
+.overlay[hidden]{display:none}
+.sheet{width:min(560px,100%);max-height:90vh;overflow:auto;display:grid;gap:12px;box-shadow:var(--shadow)}
+body.tv .stu{display:none}
+
+/* overdue + zones */
+.chip.overdue{background:var(--red);color:#fff}
+.item.overdue{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
+.item.overdue .stripe{background:var(--red)}
+.zone{display:inline-block;padding:1px 8px;border-radius:6px;background:var(--surface-2);font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.zone.mine{background:var(--accent);color:var(--accent-ink)}
+.overdue-banner{background:var(--red-soft);border:1px solid var(--red);color:var(--ink);border-radius:12px;padding:12px 16px;display:grid;gap:4px}
+.overdue-banner b{color:var(--red)}
+select.field{min-width:150px}
+.settings{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.settings input{width:80px}
+
+/* TV display */
+#tvExit,#tvClock{display:none}
+body.tv{padding:0 24px 24px;font-size:20px}
+body.tv header.top, body.tv nav.tabs, body.tv .legend, body.tv #tvBtn, body.tv #offline{display:none}
+#soundBtn[aria-pressed="true"]{border-color:var(--green);color:var(--green)}
+body.tv .wrap{max-width:none}
+body.tv #tab-board{padding-top:24px}
+body.tv .board{border:0;background:transparent;grid-template-columns:auto 1fr;gap:56px;justify-items:start;text-align:left}
+body.tv .light{width:220px;border-radius:48px;padding:26px;gap:22px}
+body.tv .lamp{width:168px;height:168px}
+body.tv .verdict h2{font-size:clamp(3rem,8vw,7rem)}
+body.tv .verdict p.lead{font-size:clamp(1.3rem,2.5vw,2.2rem)}
+body.tv .stat b{font-size:3.4rem}
+body.tv .item h3{font-size:1.6rem}
+body.tv .item .meta{font-size:1.05rem}
+body.tv #tvExit{display:block;position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;opacity:.35;z-index:40}
+body.tv #tvExit:hover,body.tv #tvExit:focus-visible{opacity:1}
+body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:var(--ink-2);margin-bottom:6px}
+@media (max-width:760px){body.tv .board{grid-template-columns:1fr;justify-items:center;text-align:center}body.tv .lamp{width:110px;height:110px}body.tv .light{width:150px}}
+
+/* toasts */
+#toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;z-index:50;max-width:min(360px,calc(100vw - 32px))}
+.toast{background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:10px;box-shadow:var(--shadow);font-size:.92rem;display:flex;gap:10px;align-items:flex-start;animation:tin .25s ease-out}
+.toast i{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px}
+@keyframes tin{from{transform:translateY(8px);opacity:0}}
+.offline{background:var(--amber-soft);color:var(--ink);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.9rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span style="background:var(--red)"></span><span style="background:var(--amber)"></span><span style="background:var(--green)"></span></div>
+      <div><h1>Flush Squad Command</h1><p>Toilet escort dispatch</p></div>
+    </div>
+    <div class="me" hidden><label for="myName">You are</label><input id="myName" placeholder="e.g. Mr Tan" autocomplete="name"></div>
+  </header>
+
+  <div id="offline" class="offline" hidden>Live sync isn't available in this view, so nothing you do here will be shared. Open the published page while signed in to use it with your colleagues.</div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="board" aria-selected="true">Status Board</button>
+    <button role="tab" data-tab="request" aria-selected="false">Request Escort</button>
+    <button role="tab" data-tab="squad" aria-selected="false">Flush Squad<span id="squadBadge" class="badge" hidden>0</span></button>
+    <button role="tab" data-tab="log" aria-selected="false">Admin Log</button>
+  </nav>
+
+  <!-- STATUS BOARD -->
+  <section class="panel" id="tab-board">
+    <button class="btn ghost" id="tvExit">Exit TV display</button>
+    <div class="overdue-banner" id="overdueBanner" hidden></div>
+    <div class="card board">
+      <div class="light" aria-hidden="true">
+        <div class="lamp red" id="lampRed"></div>
+        <div class="lamp amber" id="lampAmber"></div>
+        <div class="lamp green" id="lampGreen"></div>
+      </div>
+      <div class="verdict">
+        <div id="tvClock"></div>
+        <p class="eyebrow">Live now</p>
+        <h2 id="verdictTitle" class="green">Available</h2>
+        <p class="lead" id="verdictLead">You may send your student.</p>
+        <div class="stats">
+          <div class="stat"><b id="statActive" class="mono">0</b><span>Active requests</span></div>
+          <div class="stat"><b id="statWaiting" class="mono">0</b><span>Waiting for escort</span></div>
+          <div class="stat"><b id="statFree" class="mono">0</b><span>Squad free</span></div>
+        </div>
+        <div class="row" style="margin-top:18px"><button class="btn ghost" id="tvBtn">TV display for staff room</button><button class="btn ghost" id="soundBtn" aria-pressed="false">🔇 Turn on sound</button></div>
+      </div>
+    </div>
+    <div class="legend">
+      <div><i style="background:var(--red)"></i><span><b>Red, 6 or more requests.</b> Busy. Kindly wait before sending request. Thanks and regards.</span></div>
+      <div><i style="background:var(--amber)"></i><span><b>Amber, 3 to 5 requests.</b> Help is on the way. Expect a short wait.</span></div>
+      <div><i style="background:var(--green)"></i><span><b>Green, 0 to 2 requests.</b> Available. You may send.</span></div>
+    </div>
+    <div>
+      <p class="eyebrow">In progress</p>
+      <div class="list" id="boardList"></div>
+    </div>
+  </section>
+
+  <!-- REQUEST -->
+  <section class="panel" id="tab-request" hidden>
+    <div class="two">
+      <div class="card">
+        <div id="dayBar" style="display:grid;gap:6px;margin-bottom:14px"><p class="eyebrow" style="margin:0">Exam day</p><div class="students" id="dayRow" style="max-height:none"></div></div>
+        <p class="eyebrow">Step 1 · Where is the student?</p>
+        <input class="search" id="venueSearch" type="search" placeholder="Search venue, e.g. 3-2, Lab, Library" autocomplete="off">
+        <div class="venues" id="venueGrid"></div>
+      </div>
+      <div class="card" style="display:grid;gap:14px;align-content:start">
+        <p class="eyebrow">Step 2 · Send the request</p>
+        <div><div class="muted" style="font-size:.85rem">Venue</div><h3 id="pickedVenue" style="font-size:1.5rem">None selected</h3><div id="pickedZone" class="muted" style="font-size:.85rem"></div></div>
+        <div id="stuBox" hidden style="display:grid;gap:8px">
+          <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:.85rem">Which student?</span><span id="stuMeta" class="muted" style="font-size:.78rem"></span></div>
+          <div class="students" id="sessRow" style="max-height:none"></div>
+          <div id="sessInfo" class="muted" style="font-size:.82rem"></div>
+          <div class="roster" id="dutyRoster"></div>
+          <input class="field" id="stuSearch" type="search" placeholder="Search name or register no." autocomplete="off" style="width:100%">
+          <div class="students" id="stuGrid"></div>
+        </div>
+        <div class="row">
+          <button class="btn ghost" id="uploadBtn" disabled>Upload class list</button>
+          <button class="btn ghost" id="tplBtn" title="Download a blank CSV template">Get template</button>
+        </div>
+        <div>
+          <div class="muted" style="font-size:.85rem;margin-bottom:6px">Boy or girl (helps pick the right toilet)</div>
+          <div class="seg" id="genderSeg">
+            <button data-g="" aria-pressed="true">Not stated</button>
+            <button data-g="Boy" aria-pressed="false">Boy</button>
+            <button data-g="Girl" aria-pressed="false">Girl</button>
+          </div>
+        </div>
+        <div id="nameInline" hidden style="display:grid;gap:6px;padding:12px;border-radius:10px;background:var(--amber-soft)">
+          <label for="myName2" style="font-weight:700;font-size:.9rem">Your name (so the squad knows who asked)</label>
+          <input class="field" id="myName2" placeholder="e.g. Mr Tan" autocomplete="name">
+        </div>
+        <button class="btn big" id="sendReq" disabled>Request toilet escort</button>
+        <p class="muted" id="reqHint" style="margin:0;font-size:.85rem">Enter your name at the top, then pick a venue.</p>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow">My requests today</p>
+      <div class="list" id="myList"></div>
+    </div>
+  </section>
+
+  <!-- SQUAD -->
+  <section class="panel" id="tab-squad" hidden>
+    <div class="card duty-banner" id="dutyCard">
+      <div>
+        <p class="eyebrow">Your duty status</p>
+        <h3 id="dutyTitle" style="font-size:1.4rem">Not on toilet duty</h3>
+        <p class="muted" id="dutySub" style="margin:4px 0 0">Join the squad to receive requests. Keep this tab open for sound alerts.</p>
+      </div>
+      <div class="row">
+        <button class="btn go" id="endDuty" hidden>Duty ended</button>
+        <label for="zoneSel" class="muted" id="zoneLbl" style="font-size:.85rem">My zone</label>
+        <select class="field" id="zoneSel"><option value="">All zones</option></select>
+        <button class="btn" id="joinDuty">Join the squad</button>
+        <button class="btn ghost" id="leaveDuty" hidden>Go off duty</button>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow">Squad on duty <span style="text-transform:none;letter-spacing:0;font-weight:400">· tap your name to use it</span></p>
+      <div class="squad" id="squadList"></div>
+    </div>
+    <div>
+      <p class="eyebrow">Open requests</p>
+      <div class="list" id="squadReqs"></div>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section class="panel" id="tab-log" hidden>
+    <div class="card" style="display:grid;gap:14px">
+      <div class="row" style="justify-content:space-between">
+        <div class="row"><label for="logDate" class="muted">Day</label><input type="date" id="logDate"></div>
+        <div class="row"><button class="btn ghost" id="csvBtn">Download CSV</button><button class="btn danger" id="flushBtn">🚽 The Great Flush</button></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><b id="kTotal" class="mono">0</b><span>Requests</span></div>
+        <div class="kpi"><b id="kResp" class="mono">–</b><span>Avg wait for escort</span></div>
+        <div class="kpi"><b id="kDur" class="mono">–</b><span>Avg escort time</span></div>
+        <div class="kpi"><b id="kTop">–</b><span>Busiest venue</span></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Requested</th><th>Venue</th><th>Zone</th><th>Student</th><th>Requested by</th><th>Invigilator on duty</th><th>Escort</th><th>Wait</th><th>Escort time</th><th>Status</th></tr></thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="display:grid;gap:12px">
+      <div><p class="eyebrow">Invigilation roster</p><p class="muted" style="margin:0;font-size:.9rem">Who is on duty in each venue. Duties marked "collects papers" pick up the exam papers from the exam centre, and "ends paper" is the last invigilator.</p></div>
+      <div class="students" id="rosterDays" style="max-height:none"></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Venue</th><th>Paper</th><th>Exam time</th><th>Invigilators</th></tr></thead>
+          <tbody id="rosterBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Settings</p>
+      <form class="settings" id="settingsForm" style="margin-bottom:22px">
+        <label for="overdueMin">Warn everyone when an escort passes</label>
+        <input class="field mono" type="number" id="overdueMin" min="3" max="60" value="10">
+        <span>minutes</span>
+        <button class="btn ghost" type="submit">Save</button>
+      </form>
+      <p class="eyebrow">Venues and zones</p>
+      <p class="muted" style="margin:0 0 10px;font-size:.9rem">Venues appear in the search. Each venue belongs to a toilet zone (for example a block), and duty teachers pick the zone they cover. Add your school's real rooms and remove the samples.</p>
+      <form class="row" id="venueForm">
+        <input class="field" id="vName" placeholder="Venue name, e.g. 2-4" required>
+        <input class="field" id="vZone" placeholder="Zone, e.g. Block B" list="zoneList" required>
+        <datalist id="zoneList"></datalist>
+        <input class="field" id="vBlock" placeholder="Level / note, e.g. Level 2">
+        <button class="btn" type="submit">Add venue</button>
+      </form>
+      <div class="vlist" id="venueAdmin"></div>
+    </div>
+  </section>
+</div>
+<div id="toasts" aria-live="polite"></div>
+<div class="overlay" id="whoOverlay" hidden>
+  <div class="card sheet" role="dialog" aria-modal="true" aria-labelledby="whoTitle">
+    <p class="eyebrow" id="whoEyebrow">Confirm request</p>
+    <h3 id="whoTitle" style="font-size:1.3rem">Who is making this request?</h3>
+    <p id="whoSub" class="muted" style="margin:0"></p>
+    <div id="whoAsk" style="display:grid;gap:10px">
+      <p style="margin:0;font-size:1.05rem">The request is made by invigilator <strong id="whoInvig"></strong>?</p>
+      <div class="row" id="whoYes"></div>
+      <button class="btn ghost" id="whoNo">No, someone else</button>
+    </div>
+    <form id="whoForm" style="display:grid;gap:8px" hidden>
+      <label for="whoName" style="font-weight:700">Your name</label>
+      <input class="field" id="whoName" placeholder="e.g. Mr Tan" autocomplete="name" required>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn ghost" type="button" id="whoBack">Back</button>
+        <button class="btn" type="submit">Send request</button>
+      </div>
+    </form>
+    <button class="btn ghost" id="whoCancel" style="justify-self:start;border:0;padding-inline:0">Cancel</button>
+  </div>
+</div>
+<div class="overlay" id="gfOverlay" hidden>
+  <div class="card sheet" role="dialog" aria-modal="true" aria-labelledby="gfTitle">
+    <p class="eyebrow">Reset</p>
+    <h3 id="gfTitle" style="font-size:1.35rem">🚽 The Great Flush</h3>
+    <p class="muted" style="margin:0">Choose what to flush away. This can't be undone, so download the CSV first if you need a record.</p>
+    <label class="check"><input type="checkbox" id="gfDay" checked><span><b>Requests on <span id="gfDayLabel"></span></b><br><span class="muted" id="gfDayCount"></span></span></label>
+    <label class="check"><input type="checkbox" id="gfAll"><span><b>All requests, every day</b><br><span class="muted" id="gfAllCount">Clears the whole log.</span></span></label>
+    <label class="check"><input type="checkbox" id="gfSquad" checked><span><b>Squad on duty list</b><br><span class="muted">Everyone goes off duty and must tap Join the squad again.</span></span></label>
+    <p class="muted" style="margin:0;font-size:.85rem">Venues, class lists, the invigilation schedule and settings are always kept.</p>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" id="gfCancel">Keep everything</button>
+      <button class="btn danger" id="gfGo">Flush it</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileIn" accept=".csv,.xlsx,.xls,.txt" hidden>
+<div class="overlay" id="upOverlay" hidden>
+  <div class="card sheet" role="dialog" aria-modal="true" aria-labelledby="upTitle">
+    <p class="eyebrow">Class list upload</p>
+    <h3 id="upTitle" style="font-size:1.35rem">Check the list</h3>
+    <p id="upSummary" class="muted" style="margin:0"></p>
+    <div class="tablewrap" style="max-height:300px;overflow:auto">
+      <table><thead><tr><th>No.</th><th>Name</th><th>Boy/Girl</th></tr></thead><tbody id="upRows"></tbody></table>
+    </div>
+    <p id="upWarn" class="muted" style="margin:0;font-size:.85rem"></p>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" id="upCancel">Cancel</button>
+      <button class="btn" id="upSave">Save class list</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const pad = n => String(n).padStart(2,"0");
+  const dayKey = (d=new Date()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const hhmm = t => { if(!t) return "–"; const d=new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const mins = ms => { if(ms==null||ms<0) return "–"; const m=Math.floor(ms/60000), s=Math.floor(ms%60000/1000); return m?`${m}m ${pad(s)}s`:`${s}s`; };
+  const ago = t => { const m=Math.floor((Date.now()-t)/60000); return m<1?"just now":`${m} min ago`; };
+  const minsSince = t => Math.floor((Date.now()-t)/60000);
+  const slug = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60) || "teacher";
+  const store = { get(k){ try{return localStorage.getItem(k)}catch{return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch{} } };
+
+  // ---------- state ----------
+  const S = { venues:[], squad:[], requests:[], lists:{}, sessPick:{}, student:null, upTarget:null, upParsed:null, settings:{overdueMin:10}, picked:null, gender:"", tab:"board", db:null, ready:{}, warned:new Set() };
+  const myName = () => $("#myName").value.trim();
+  $("#myName").value = store.get("fsc.name") || "";
+  $("#myName").addEventListener("input", () => { store.set("fsc.name", myName()); renderAll(); });
+  let rmTimer=null;
+  $("#squadList").addEventListener("click", async e=>{
+    const x=e.target.closest("[data-rm]"), yes=e.target.closest("[data-rmyes]"), no=e.target.closest("[data-rmno]");
+    if(x){ S.rmPending=x.dataset.rm; clearTimeout(rmTimer); rmTimer=setTimeout(()=>{ S.rmPending=null; renderSquad(); }, 6000); renderSquad(); return; }
+    if(no){ S.rmPending=null; renderSquad(); return; }
+    if(yes){
+      const m=S.squad.find(q=>q.id===yes.dataset.rmyes); S.rmPending=null; clearTimeout(rmTimer);
+      if(!m||!S.db){ renderSquad(); return; }
+      try{
+        if(m.status==="busy" && m.requestId){ try{ await S.db.doc("requests/"+m.requestId).update({ status:"done", endedAt:Date.now(), endedNote:"Removed from squad" }); }catch{} }
+        await S.db.doc("squad/"+m.id).delete();
+        toast(`${m.name} removed from the squad.`, "var(--green)", 3000);
+      }catch{ toast("Couldn't remove them. Try again.", "var(--red)"); renderSquad(); }
+      return;
+    }
+    const b=e.target.closest("[data-me]"); if(!b) return;
+    $("#myName").value=b.dataset.me; store.set("fsc.name", myName()); unlockAudio(); renderAll();
+    toast(`You're now ${b.dataset.me}.`, "var(--green)", 3000);
+  });
+  $("#myName2").addEventListener("input", () => { $("#myName").value=$("#myName2").value; store.set("fsc.name", myName()); renderAll(); });
+  $("#myName2").addEventListener("blur", () => { if(myName()) $("#nameInline").hidden=true; });
+  const zoneOf = v => (v && v.zone) || "General";
+  const allZones = () => [...new Set(S.venues.map(zoneOf))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const covers = (m, zone) => !m.zones || !m.zones.length || m.zones.includes(zone);
+  const overdueMs = () => Math.max(3, Number(S.settings.overdueMin)||10) * 60000;
+  const isOverdue = r => r.status==="claimed" && r.claimedAt && Date.now()-r.claimedAt > overdueMs();
+
+  // ---------- tabs ----------
+  function setTab(t){
+    S.tab=t;
+    document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===t));
+    ["board","request","squad","log"].forEach(k=>$("#tab-"+k).hidden = k!==t);
+    document.querySelector(".me").hidden = t!=="squad";
+    try{ history.replaceState(null,"","#"+t) }catch{}
+    if(t==="log") loadLog();
+  }
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+
+  // ---------- TV display ----------
+  let wake=null;
+  async function setTV(on){
+    document.body.classList.toggle("tv", on);
+    if(on){ setTab("board"); try{ history.replaceState(null,"","#tv") }catch{}
+      try{ wake = await navigator.wakeLock?.request("screen"); }catch{}
+      try{ await document.documentElement.requestFullscreen?.(); }catch{}
+    } else { try{ history.replaceState(null,"","#board") }catch{}
+      try{ wake && wake.release(); wake=null; }catch{}
+      try{ document.fullscreenElement && await document.exitFullscreen(); }catch{}
+    }
+    tick();
+  }
+  $("#tvBtn").addEventListener("click", ()=>{ unlockAudio(); setTV(true); });
+  $("#tvExit").addEventListener("click", ()=>setTV(false));
+  document.addEventListener("visibilitychange", async ()=>{ if(document.visibilityState==="visible" && document.body.classList.contains("tv")){ try{ wake = await navigator.wakeLock?.request("screen"); }catch{} } });
+  const h = location.hash.slice(1);
+  if(h==="tv") setTV(true); else if(["board","request","squad","log"].includes(h)) setTab(h);
+
+  // ---------- toasts & sound ----------
+  function toast(msg, color="var(--accent)", ms=6000){
+    const el=document.createElement("div"); el.className="toast";
+    el.innerHTML=`<i style="background:${color}"></i><span>${esc(msg)}</span>`;
+    $("#toasts").appendChild(el); setTimeout(()=>el.remove(), ms);
+    while($("#toasts").children.length>4) $("#toasts").firstChild.remove();
+  }
+  let actx=null;
+  function unlockAudio(){ try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); }catch{} }
+  function chime(notes=[880,1175,880]){
+    if(!actx || !soundOn) return;
+    try{
+      const t=actx.currentTime;
+      notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain();
+        o.frequency.value=f; o.type="sine"; g.gain.setValueAtTime(0,t+i*.18); g.gain.linearRampToValueAtTime(.25,t+i*.18+.02); g.gain.exponentialRampToValueAtTime(.001,t+i*.18+.16);
+        o.connect(g).connect(actx.destination); o.start(t+i*.18); o.stop(t+i*.18+.18); });
+    }catch{}
+  }
+  const alarm = () => chime([660,520,660,520]);
+  document.addEventListener("pointerdown", unlockAudio);
+  let soundOn = store.get("fsc.sound")!=="off";
+  const audioReady = () => !!actx && actx.state==="running";
+  function renderSoundBtn(){
+    const on = soundOn && audioReady();
+    $("#soundBtn").setAttribute("aria-pressed", on);
+    $("#soundBtn").textContent = on ? "🔊 Sound on" : "🔇 Turn on sound";
+  }
+  $("#soundBtn").addEventListener("click", async ()=>{
+    unlockAudio(); try{ await actx.resume(); }catch{}
+    if(soundOn && audioReady() && $("#soundBtn").getAttribute("aria-pressed")==="true"){ soundOn=false; }
+    else { soundOn=true; flushSound(); }
+    store.set("fsc.sound", soundOn?"on":"off"); renderSoundBtn();
+  });
+  setInterval(renderSoundBtn, 3000);
+  function heroSound(){
+    if(!actx || !soundOn) return;
+    try{
+      const t=actx.currentTime;
+      // "da-da-da-DAAA!" superhero fanfare
+      [[523,0,.12],[523,.14,.12],[523,.28,.12],[659,.42,.18],[784,.62,.14],[1047,.78,.7]].forEach(([f,o,len])=>{
+        ["square","triangle"].forEach((type,j)=>{
+          const os=actx.createOscillator(), g=actx.createGain();
+          os.type=type; os.frequency.setValueAtTime(f*(j?2:1),t+o);
+          if(len>.5){ const lfo=actx.createOscillator(), lg=actx.createGain(); lfo.frequency.value=6; lg.gain.value=f*.012; lfo.connect(lg).connect(os.frequency); lfo.start(t+o); lfo.stop(t+o+len); }
+          const vol = j ? .05 : .11;
+          g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(vol,t+o+.015); g.gain.setValueAtTime(vol,t+o+len*.7); g.gain.exponentialRampToValueAtTime(.001,t+o+len);
+          os.connect(g).connect(actx.destination); os.start(t+o); os.stop(t+o+len+.02);
+        });
+      });
+    }catch{}
+  }
+  function doneSound(){
+    if(!actx || !soundOn) return;
+    try{
+      const t=actx.currentTime;
+      // "mission complete" jingle: bouncy run up, then a sparkly ding
+      [[392,0,.1],[523,.1,.1],[659,.2,.1],[784,.3,.1],[659,.42,.1],[784,.52,.5]].forEach(([f,o,len])=>{
+        const os=actx.createOscillator(), g=actx.createGain();
+        os.type="triangle"; os.frequency.setValueAtTime(f,t+o);
+        g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(.2,t+o+.01); g.gain.exponentialRampToValueAtTime(.001,t+o+len);
+        os.connect(g).connect(actx.destination); os.start(t+o); os.stop(t+o+len+.02);
+      });
+      [2093,2637,3136].forEach((f,i)=>{
+        const os=actx.createOscillator(), g=actx.createGain(), o=.55+i*.07;
+        os.type="sine"; os.frequency.value=f;
+        g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(.08,t+o+.01); g.gain.exponentialRampToValueAtTime(.001,t+o+.6);
+        os.connect(g).connect(actx.destination); os.start(t+o); os.stop(t+o+.62);
+      });
+    }catch{}
+  }
+  function flushSound(){
+    if(!actx || !soundOn) return;
+    try{
+      const t=actx.currentTime, dur=2.2, sr=actx.sampleRate;
+      const buf=actx.createBuffer(1, sr*dur, sr), d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      const src=actx.createBufferSource(); src.buffer=buf;
+      const bp=actx.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=1.2;
+      bp.frequency.setValueAtTime(350,t); bp.frequency.exponentialRampToValueAtTime(1500,t+.5); bp.frequency.exponentialRampToValueAtTime(220,t+dur);
+      const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.55,t+.15); g.gain.setValueAtTime(.55,t+.9); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+      src.connect(bp).connect(g).connect(actx.destination); src.start(t); src.stop(t+dur);
+      [0.9,1.15,1.35,1.6].forEach((o,i)=>{ const os=actx.createOscillator(), og=actx.createGain();
+        os.type="sine"; os.frequency.setValueAtTime(260-i*30,t+o); os.frequency.exponentialRampToValueAtTime(90,t+o+.14);
+        og.gain.setValueAtTime(0,t+o); og.gain.linearRampToValueAtTime(.18,t+o+.02); og.gain.exponentialRampToValueAtTime(.001,t+o+.16);
+        os.connect(og).connect(actx.destination); os.start(t+o); os.stop(t+o+.18); });
+    }catch{}
+  }
+
+  // ---------- derived ----------
+  const active = () => S.requests.filter(r=>r.status==="waiting"||r.status==="claimed").sort((a,b)=>a.createdAt-b.createdAt);
+  const meOnDuty = () => S.squad.find(m=>m.id===slug(myName()||"~"));
+  const lightLevel = n => n>5?"red":n>=3?"amber":"green";
+
+  // ---------- render ----------
+  function renderBoard(){
+    const act=active(), n=act.length, waiting=act.filter(r=>r.status==="waiting").length;
+    const free=S.squad.filter(m=>m.status==="free").length;
+    const lv=lightLevel(n);
+    ["Red","Amber","Green"].forEach(c=>$("#lamp"+c).classList.toggle("on", lv===c.toLowerCase()));
+    const copy={red:["Code Brown! All thrones occupied!","Every loo has a queue. Please hold your student in class a little longer."],amber:["Patience, young bladder. Help is near.","Cross your legs and count to 100. The Flush Squad will be there soon."],green:["Available","You may send your student."]}[lv];
+    $("#verdictTitle").innerHTML=esc(copy[0])+(lv==="amber"?` <span class="wiggle" aria-hidden="true">😣</span>`:lv==="red"?` <span class="siren" aria-hidden="true">🚨</span><span class="throne" aria-hidden="true"><span class="crown">👑</span><span class="rattle">🚽</span></span>`:""); $("#verdictTitle").className=lv; $("#verdictLead").textContent=copy[1];
+    $("#statActive").textContent=n; $("#statWaiting").textContent=waiting; $("#statFree").textContent=`${free}/${S.squad.length}`;
+    $("#boardList").innerHTML = act.length ? act.map(r=>itemHTML(r,false)).join("") : `<div class="empty">No students out right now.</div>`;
+    const od=act.filter(isOverdue);
+    $("#overdueBanner").hidden=!od.length;
+    $("#overdueBanner").innerHTML = od.length ? `<b>Overdue escort${od.length>1?"s":""}. Please check in.</b>` +
+      od.map(r=>`<span>${esc(r.claimedBy)} has been escorting the student from <b>${esc(r.venue)}</b> for ${minsSince(r.claimedAt)} min.</span>`).join("") : "";
+  }
+  function statusChip(r){
+    if(r.status==="waiting") return `<span class="chip waiting"><span class="dot"></span>Waiting ${minsSince(r.createdAt)} min</span>`;
+    if(r.status==="claimed") return isOverdue(r)
+      ? `<span class="chip overdue"><span class="dot"></span>Overdue · ${esc(r.claimedBy)} · ${minsSince(r.claimedAt)} min</span>`
+      : `<span class="chip claimed"><span class="dot"></span>${esc(r.claimedBy)} escorting · ${minsSince(r.claimedAt)} min</span>`;
+    if(r.status==="done") return `<span class="chip done"><span class="dot"></span>Back in class</span>`;
+    return `<span class="chip">Cancelled</span>`;
+  }
+  function itemHTML(r, actions, myZone){
+    const who = r.gender ? ` · ${esc(r.gender)}` : "";
+    const z = r.zone ? `<span class="zone${myZone?" mine":""}">${esc(r.zone)}${myZone?" · your zone":""}</span> ` : "";
+    return `<div class="item ${r.status}${isOverdue(r)?" overdue":""}" data-id="${esc(r.id)}"><div class="stripe"></div>
+      <div><h3>${esc(r.venue)}${r.block?` <span class="muted" style="font-weight:600;font-size:.85rem">${esc(r.block)}</span>`:""}</h3>
+      <div class="meta">${z}${statusChip(r)} &nbsp;${r.student?`<b class="stu">${esc(r.student)}${r.studentClass?` (${esc(r.studentClass)})`:""}</b> · `:""}${r.invigilator?`Invigilator ${esc(r.invigilator)} · `:""}Requested by ${esc(r.requestedBy)}${who} · <span class="mono">${hhmm(r.createdAt)}</span></div></div>
+      ${actions?`<div class="actions">${actions}</div>`:""}</div>`;
+  }
+  function venueCard(v){
+    const ss=daySessions(v.id).filter(x=>x.start), cs=activeSession(v.id), dn=cs?dutyNow(cs):null;
+    const papers = ss.length ? ss.map(x=>`<small style="display:block"><strong class="hl">${esc(x.start)}–${esc(x.end)}</strong> ${esc(x.subject)}${isNow(x)?" · now":""}</small>`).join("")
+      : (examDays().length ? `<small style="display:block">No exam this day</small>` : "");
+    const inv = dn && cs && ss.length ? `<small style="display:block">${dn.live?"Invigilator":"First invigilator"}${ss.length>1?` (${esc(cs.start)})`:""}: <strong class="hl">${esc(dn.slot.names.join(", "))}</strong>${dn.index===cs.invig.length-1?" (ends paper)":""}</small>` : "";
+    return `<button class="venue" data-v="${esc(v.id)}" aria-pressed="${S.picked===v.id}"><b>${esc(v.name)}</b><small>${esc(zoneOf(v))}${v.block?` · <strong class="hl">${esc(v.block)}</strong>`:""}</small>${papers}${inv}</button>`;
+  }
+  function renderVenues(){
+    const q=$("#venueSearch").value.trim().toLowerCase();
+    const list=S.venues.filter(v=>!q || (v.name+" "+zoneOf(v)+" "+(v.block||"")).toLowerCase().includes(q));
+    renderDayRow();
+    $("#venueGrid").innerHTML = list.length ? list.map(venueCard).join("")
+      : `<div class="empty" style="grid-column:1/-1">${S.venues.length?"No venue matches that search.":"No venues yet. Add them in Admin Log."}</div>`;
+    const v=S.venues.find(v=>v.id===S.picked);
+    $("#pickedVenue").textContent = v ? v.name : "None selected";
+    $("#pickedZone").innerHTML = v ? `${v.block?`<strong class="hl">${esc(v.block)}</strong> · `:""}Toilet zone: ${esc(zoneOf(v))}` : "";
+    const ok = !!v && !!S.db;
+    $("#sendReq").disabled=!ok;
+    $("#reqHint").textContent = !v ? "Pick a venue on the left." : `Duty teachers covering ${zoneOf(v)} will be alerted first.`;
+    renderStudents();
+  }
+  function renderMine(){
+    const me=myName(); const mine=S.requests.filter(r=>r.requestedBy===me).sort((a,b)=>b.createdAt-a.createdAt);
+    $("#myList").innerHTML = mine.length ? mine.map(r=>itemHTML(r, r.status==="waiting"?`<button class="btn ghost" data-cancel="${esc(r.id)}">Cancel</button>`:"")).join("")
+      : `<div class="empty">${me?"You haven't sent any requests today.":"Enter your name to see your requests."}</div>`;
+  }
+  function renderZoneSelect(){
+    const sel=$("#zoneSel"), cur=sel.value;
+    sel.innerHTML = `<option value="">All zones</option>` + allZones().map(z=>`<option value="${esc(z)}">${esc(z)}</option>`).join("");
+    sel.value = allZones().includes(cur) ? cur : (store.get("fsc.zone") && allZones().includes(store.get("fsc.zone")) ? store.get("fsc.zone") : "");
+    $("#zoneList").innerHTML = allZones().map(z=>`<option value="${esc(z)}"></option>`).join("");
+  }
+  function renderSquad(){
+    const me=meOnDuty();
+    $("#joinDuty").hidden=!!me; $("#zoneSel").hidden=!!me; $("#zoneLbl").hidden=!!me;
+    $("#leaveDuty").hidden=!me || me.status==="busy"; $("#endDuty").hidden=!(me && me.status==="busy");
+    $("#joinDuty").disabled=!myName()||!S.db;
+    const zl = me && me.zones && me.zones.length ? me.zones.join(", ") : "all zones";
+    if(!me){ $("#dutyTitle").textContent="Not on toilet duty"; $("#dutySub").textContent= myName()?"Pick the zone you cover and join the squad. Keep this tab open for sound alerts.":"Enter your name at the top, then join the squad."; }
+    else if(me.status==="busy"){ const r=S.requests.find(x=>x.id===me.requestId);
+      $("#dutyTitle").textContent=`Escorting from ${r?r.venue:"a venue"}${r&&r.claimedAt?` · ${minsSince(r.claimedAt)} min`:""}`;
+      $("#dutySub").textContent= r&&isOverdue(r) ? `This escort is past ${S.settings.overdueMin} minutes and everyone has been warned. Press Duty ended once the student is back.` : "Press Duty ended once the student is safely back in class."; }
+    else { $("#dutyTitle").textContent=`On duty · Free · ${zl}`; $("#dutySub").textContent="You'll hear a chime for requests in your zone. If nobody in a zone is free, everyone on the squad is alerted."; }
+    $("#squadList").innerHTML = S.squad.length ? S.squad.map(m=>(S.rmPending===m.id
+      ? `<span class="chipwrap confirm"><span>Remove <b>${esc(m.name)}</b>${m.status==="busy"?" and end their escort":""}?</span><button class="mini yes" data-rmyes="${esc(m.id)}">Remove</button><button class="mini" data-rmno="1">Keep</button></span>`
+      : `<span class="chipwrap ${m.status}"><button class="chip pick ${m.status}${m.name===myName()?" me":""}" data-me="${esc(m.name)}" title="Tap if this is you">${m.name===myName()?"✓ ":`<span class="dot"></span>`}${esc(m.name)} · ${m.status==="busy"?"Busy":"Free"} · ${esc(m.zones&&m.zones.length?m.zones.join(", "):"All zones")}</button><button class="chip-x" data-rm="${esc(m.id)}" aria-label="Remove ${esc(m.name)} from the squad" title="Remove from squad">✕</button></span>`)).join("")
+      : `<span class="muted">Nobody is on duty yet.</span>`;
+    const busy = me && me.status==="busy";
+    const act=active().sort((a,b)=> (me? (covers(me,b.zone)?1:0)-(covers(me,a.zone)?1:0) : 0) || a.createdAt-b.createdAt);
+    $("#squadReqs").innerHTML = act.length ? act.map(r=>{
+      const a = r.status==="waiting" ? `<button class="btn warn" data-claim="${esc(r.id)}" ${(!me||busy)?"disabled":""}>I will do it</button>` : "";
+      return itemHTML(r, a, me && me.zones && me.zones.length && covers(me, r.zone));
+    }).join("") : `<div class="empty">No open requests. All clear.</div>`;
+    const waiting=act.filter(r=>r.status==="waiting").length;
+    $("#squadBadge").hidden=!waiting; $("#squadBadge").textContent=waiting;
+    document.title = waiting && me ? `(${waiting}) Flush Squad Command` : "Flush Squad Command";
+  }
+  function renderAll(){ renderBoard(); renderVenues(); renderMine(); renderSquad(); }
+
+  // ---------- clock: timers, overdue warnings ----------
+  function tick(){
+    const d=new Date(); $("#tvClock").textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    active().filter(isOverdue).forEach(r=>{
+      if(S.warned.has(r.id)) return; S.warned.add(r.id);
+      if(!S.ready.req) return;
+      toast(`Overdue: ${r.claimedBy} has been escorting the student from ${r.venue} for ${minsSince(r.claimedAt)} min. Please check in.`, "var(--red)", 15000);
+      const me=meOnDuty();
+      if(me || r.requestedBy===myName() || document.body.classList.contains("tv")) alarm();
+    });
+  }
+  setInterval(()=>{ renderBoard(); renderMine(); renderSquad(); tick(); }, 15000);
+
+  // ---------- venue picking ----------
+  $("#venueSearch").addEventListener("input", renderVenues);
+  $("#venueGrid").addEventListener("click", e=>{ const b=e.target.closest("[data-v]"); if(!b) return; if(S.picked!==b.dataset.v){ S.picked=b.dataset.v; S.student=null; $("#stuSearch").value=""; } renderVenues(); });
+  $("#genderSeg").addEventListener("click", e=>{ const b=e.target.closest("[data-g]"); if(!b) return; S.gender=b.dataset.g;
+    document.querySelectorAll("#genderSeg button").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+
+  // ---------- actions ----------
+  let pendingInvig=[];
+  function openWho(){
+    const v=S.venues.find(v=>v.id===S.picked); if(!v||!S.db) return;
+    const cur=activeSession(v.id), dn=dutyNow(cur);
+    pendingInvig = dn ? dn.slot.names.slice() : [];
+    $("#whoSub").textContent = `${v.name}${v.block?" · "+v.block:""}${S.student?` · ${S.student.name}`:""}`;
+    $("#whoAsk").hidden = !pendingInvig.length;
+    $("#whoForm").hidden = !!pendingInvig.length;
+    $("#whoBack").hidden = !pendingInvig.length;
+    if(pendingInvig.length){
+      $("#whoInvig").textContent = pendingInvig.join(" / ");
+      $("#whoYes").innerHTML = pendingInvig.map((n,i)=>`<button class="btn go" data-yes="${i}">${pendingInvig.length>1?`Yes, I'm ${esc(n)}`:"Yes"}</button>`).join("");
+    }
+    $("#whoName").value = myName() && !pendingInvig.includes(myName()) ? myName() : "";
+    $("#whoOverlay").hidden=false;
+    (pendingInvig.length ? $("#whoYes button") : $("#whoName")).focus();
+  }
+  const closeWho = ()=>{ $("#whoOverlay").hidden=true; };
+  $("#whoYes").addEventListener("click", e=>{ const b=e.target.closest("[data-yes]"); if(!b) return; closeWho(); sendRequest(pendingInvig[+b.dataset.yes], true); });
+  $("#whoNo").addEventListener("click", ()=>{ $("#whoAsk").hidden=true; $("#whoForm").hidden=false; $("#whoName").focus(); });
+  $("#whoBack").addEventListener("click", ()=>{ $("#whoForm").hidden=true; $("#whoAsk").hidden=false; });
+  $("#whoForm").addEventListener("submit", e=>{ e.preventDefault(); const n=$("#whoName").value.trim(); if(!n) return; closeWho(); sendRequest(n, false); });
+  $("#whoCancel").addEventListener("click", closeWho);
+  $("#whoOverlay").addEventListener("click", e=>{ if(e.target.id==="whoOverlay") closeWho(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("#whoOverlay").hidden) closeWho(); });
+
+  async function sendRequest(by, byInvigilator){
+    const v=S.venues.find(v=>v.id===S.picked); if(!v||!by) return;
+    $("#myName").value=by; store.set("fsc.name", by);
+    $("#sendReq").disabled=true;
+    const cur=activeSession(v.id);
+    try{
+      await S.db.collection("requests").add({ venue:v.name, zone:zoneOf(v), block:v.block||"", gender:S.gender,
+        student:S.student?S.student.name:"", studentNo:S.student?S.student.no:"", studentClass:S.student?(S.student.cls||""):"",
+        subject:(cur||{}).subject||"", invigilator:((dutyNow(cur)||{}).slot||{names:[]}).names.join(", "), byInvigilator:!!byInvigilator,
+        requestedBy:by, createdAt:Date.now(), day:dayKey(), status:"waiting", claimedBy:null, claimedAt:null, endedAt:null });
+      toast(`Request sent for ${v.name}. The Flush Squad has been alerted.`, "var(--green)");
+      S.picked=null; S.student=null; $("#venueSearch").value=""; $("#stuSearch").value="";
+    }catch(e){ toast(e?.code==="quota_exceeded" ? "The log is full. Ask an admin to clear old days." : "Couldn't send the request. Check your connection and try again.", "var(--red)"); }
+    renderAll();
+  }
+  $("#sendReq").addEventListener("click", openWho);
+
+  $("#myList").addEventListener("click", async e=>{
+    const b=e.target.closest("[data-cancel]"); if(!b) return;
+    const ref=S.db.doc("requests/"+b.dataset.cancel);
+    const s=await ref.get(); if(s.exists && s.data().status==="waiting"){ await ref.update({status:"cancelled", endedAt:Date.now()}); toast("Request cancelled."); }
+    else toast("A teacher has already taken this request.", "var(--amber)");
+  });
+
+  $("#joinDuty").addEventListener("click", async ()=>{
+    unlockAudio();
+    const n=myName(); if(!n) return;
+    const z=$("#zoneSel").value; store.set("fsc.zone", z);
+    await S.db.doc("squad/"+slug(n)).set({ name:n, status:"free", zones: z?[z]:[], requestId:null, since:Date.now() });
+    toast(`You're on the Flush Squad for ${z||"all zones"}. Keep this tab open.`, "var(--green)");
+  });
+  $("#leaveDuty").addEventListener("click", async ()=>{ const me=meOnDuty(); if(me && me.status!=="busy"){ await S.db.doc("squad/"+me.id).delete(); toast("You're off duty."); } });
+
+  $("#squadReqs").addEventListener("click", async e=>{
+    const b=e.target.closest("[data-claim]"); if(!b) return;
+    const me=meOnDuty(); if(!me||me.status==="busy") return;
+    b.disabled=true;
+    const ref=S.db.doc("requests/"+b.dataset.claim);
+    try{
+      const lease=await ref.acquire({ holder: me.id+"-"+Math.random().toString(36).slice(2,8), ttlMs:5000 });
+      if(!lease.acquired){ toast("Another teacher is taking this one.", "var(--amber)"); return; }
+      const s=await ref.get();
+      if(!s.exists || s.data().status!=="waiting"){ toast(`Already taken${s.exists&&s.data().claimedBy?` by ${s.data().claimedBy}`:""}.`, "var(--amber)"); return; }
+      const now=Date.now();
+      await ref.update({ status:"claimed", claimedBy:me.name, claimedAt:now });
+      await S.db.doc("squad/"+me.id).update({ status:"busy", requestId:ref.id, since:now });
+      heroSound(); toast(`Hero mode on! Off to ${s.data().venue}. 🦸`, "var(--amber)", 4000);
+    }catch{ toast("Couldn't claim that request. Try again.", "var(--red)"); b.disabled=false; }
+  });
+
+  $("#endDuty").addEventListener("click", async ()=>{
+    const me=meOnDuty(); if(!me||me.status!=="busy") return;
+    $("#endDuty").disabled=true;
+    const now=Date.now();
+    try{
+      if(me.requestId) await S.db.doc("requests/"+me.requestId).update({ status:"done", endedAt:now });
+      await S.db.doc("squad/"+me.id).update({ status:"free", requestId:null, since:now });
+      doneSound(); toast("Mission accomplished! Student safely back. You're free again. 🎉", "var(--green)", 4000);
+    }catch{ toast("Couldn't update. Try again.", "var(--red)"); }
+    $("#endDuty").disabled=false;
+  });
+
+  // ---------- log ----------
+  $("#logDate").value = dayKey();
+  let logRows=[];
+  async function loadLog(){
+    if(!S.db) return;
+    const d=$("#logDate").value || dayKey();
+    try{
+      const snap = d===dayKey() ? null : await S.db.collection("requests").where("day","==",d).get();
+      logRows = (snap ? snap.docs.map(x=>({id:x.id,...x.data()})) : S.requests.slice()).sort((a,b)=>a.createdAt-b.createdAt);
+    }catch{ logRows=[]; }
+    renderLog();
+  }
+  function renderRoster(){
+    const days=[...new Set(S.venues.flatMap(v=>sessionsOf(v.id).filter(x=>x.date && x.invig && x.invig.length).map(x=>x.date)))].sort();
+    const logDay=$("#logDate").value || dayKey();
+    if(!days.includes(S.rosterDay)) S.rosterDay = days.includes(logDay) ? logDay : (days.find(x=>x>=dayKey()) || days[days.length-1] || logDay);
+    const d=S.rosterDay, rows=[];
+    const label = iso => { const dt=new Date(iso+"T00:00:00"); const sess=S.venues.map(v=>sessionsOf(v.id).find(x=>x.date===iso)).find(Boolean);
+      return `${dt.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}${sess&&sess.dateLabel&&/Day \d+/.test(sess.dateLabel)?" · "+sess.dateLabel.match(/Day \d+/)[0]:""}${iso===dayKey()?" · today":""}`; };
+    $("#rosterDays").innerHTML = days.map(x=>`<button class="stu-btn" data-day="${esc(x)}" aria-pressed="${x===d}">${esc(label(x))}</button>`).join("");
+    S.venues.forEach(v=> sessionsOf(v.id).filter(x=>x.date===d && x.invig && x.invig.length).forEach(x=>rows.push({v,x})));
+    rows.sort((a,b)=>(a.x.start||"").localeCompare(b.x.start||"") || (a.v.order||0)-(b.v.order||0));
+    $("#rosterBody").innerHTML = rows.length ? rows.map(({v,x})=>`<tr><td><b>${esc(v.name)}</b>${v.block?`<div class="muted" style="font-size:.8rem">${esc(v.block)}</div>`:""}</td><td>${esc(x.subject)}</td><td class="num"><b>${esc(x.start)}–${esc(x.end)}</b></td>
+      <td class="stack">${x.invig.map((sl,i)=>`<div><span class="mono">${esc(sl.from)}–${esc(sl.to)}</span> ${esc(sl.names.join(", "))}${slotNote(x,i)}</div>`).join("")}</td></tr>`).join("")
+      : `<tr><td colspan="4" class="muted" style="text-align:center;padding:18px">No invigilation schedule loaded for this day.</td></tr>`;
+  }
+  function renderLog(){
+    renderRoster();
+    const rows=logRows;
+    const resp=rows.filter(r=>r.claimedAt).map(r=>r.claimedAt-r.createdAt);
+    const dur=rows.filter(r=>r.endedAt&&r.claimedAt&&r.status==="done").map(r=>r.endedAt-r.claimedAt);
+    const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+    const counts={}; rows.forEach(r=>counts[r.venue]=(counts[r.venue]||0)+1);
+    const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    $("#kTotal").textContent=rows.length; $("#kResp").textContent=mins(avg(resp)); $("#kDur").textContent=mins(avg(dur));
+    $("#kTop").textContent= top?`${top[0]} (${top[1]})`:"–";
+    const long = r => r.endedAt&&r.claimedAt && r.endedAt-r.claimedAt > overdueMs();
+    $("#logBody").innerHTML = rows.length ? rows.map(r=>`<tr><td class="num">${hhmm(r.createdAt)}</td><td>${esc(r.venue)}</td><td>${esc(r.zone||"–")}</td><td>${esc([r.student,r.gender].filter(Boolean).join(" · ")||"–")}</td><td>${esc(r.requestedBy)}${r.byInvigilator?` <span class="chip free" style="padding:0 6px;font-size:.7rem">Invigilator</span>`:""}</td><td>${esc(r.invigilator||"–")}</td><td>${esc(r.claimedBy||"–")}</td>
+      <td class="num">${r.claimedAt?mins(r.claimedAt-r.createdAt):"–"}</td><td class="num"${long(r)?' style="color:var(--red);font-weight:700"':""}>${r.endedAt&&r.claimedAt?mins(r.endedAt-r.claimedAt):"–"}</td><td>${statusChip(r)}</td></tr>`).join("")
+      : `<tr><td colspan="10" class="muted" style="text-align:center;padding:18px">No requests on this day.</td></tr>`;
+  }
+  $("#logDate").addEventListener("change", ()=>{ S.rosterDay=$("#logDate").value; loadLog(); });
+  $("#rosterDays").addEventListener("click", e=>{ const b=e.target.closest("[data-day]"); if(!b) return; S.rosterDay=b.dataset.day; renderRoster(); });
+  $("#csvBtn").addEventListener("click", async ()=>{
+    const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+    const lines=[["Date","Requested","Venue","Zone","Level / note","Student","Class","Reg no.","Subject","Boy/Girl","Requested by","Requested by invigilator?","Invigilator on duty","Escort","Claimed","Ended","Wait (s)","Escort time (s)","Over limit","Status"].join(",")];
+    logRows.forEach(r=>{ const esc_s = r.endedAt&&r.claimedAt?Math.round((r.endedAt-r.claimedAt)/1000):"";
+      lines.push([r.day,hhmm(r.createdAt),r.venue,r.zone,r.block,r.student,r.studentClass,r.studentNo,r.subject,r.gender,r.requestedBy,r.byInvigilator?"Yes":"No",r.invigilator,r.claimedBy,hhmm(r.claimedAt),hhmm(r.endedAt),
+      r.claimedAt?Math.round((r.claimedAt-r.createdAt)/1000):"", esc_s, esc_s!=="" && esc_s*1000>overdueMs()?"Yes":"", r.status].map(q).join(",")); });
+    const dl=await claude.use("downloads");
+    if(!dl){ toast("Downloads aren't available in this view.", "var(--amber)"); return; }
+    try{ await dl.save({ filename:`toilet-escort-log-${$("#logDate").value}.csv`, data:lines.join("\n") }); }
+    catch(e){ if(e?.code!=="declined") toast("Couldn't save the file.", "var(--red)"); }
+  });
+
+  // ---------- The Great Flush ----------
+  $("#flushBtn").addEventListener("click", async ()=>{
+    if(!S.db) return;
+    const d=$("#logDate").value || dayKey();
+    $("#gfDayLabel").textContent = new Date(d+"T00:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+    $("#gfDayCount").textContent = `${logRows.length} request${logRows.length===1?"":"s"} in the log for this day.`;
+    $("#gfAll").checked=false; $("#gfDay").checked=true; $("#gfSquad").checked=true; $("#gfDay").disabled=false;
+    $("#gfOverlay").hidden=false; $("#gfCancel").focus();
+  });
+  $("#gfAll").addEventListener("change", ()=>{ $("#gfDay").disabled=$("#gfAll").checked; if($("#gfAll").checked) $("#gfDay").checked=true; });
+  const closeGF=()=>{ $("#gfOverlay").hidden=true; };
+  $("#gfCancel").addEventListener("click", closeGF);
+  $("#gfOverlay").addEventListener("click", e=>{ if(e.target.id==="gfOverlay") closeGF(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("#gfOverlay").hidden) closeGF(); });
+  $("#gfGo").addEventListener("click", async ()=>{
+    const all=$("#gfAll").checked, day=$("#gfDay").checked, squad=$("#gfSquad").checked;
+    if(!all && !day && !squad){ toast("Tick at least one thing to flush.", "var(--amber)"); return; }
+    $("#gfGo").disabled=true; $("#gfGo").textContent="Flushing…";
+    let n=0, fail=0;
+    const wipe = async (col, snap) => { for(const doc of snap.docs){ try{ await S.db.doc(col+"/"+doc.id).delete(); n++; }catch{ fail++; } } };
+    try{
+      if(all || day){
+        const col=S.db.collection("requests");
+        const q = all ? col.limit(1000) : col.where("day","==",$("#logDate").value||dayKey()).limit(1000);
+        await wipe("requests", await q.get());
+      }
+      if(squad){ await wipe("squad", await S.db.collection("squad").get()); }
+      flushSound();
+      toast(fail ? `Flushed ${n} records. ${fail} couldn't be removed; try again.` : `Whoosh! ${n} record${n===1?"":"s"} flushed away.`, fail?"var(--amber)":"var(--green)", 5000);
+      closeGF(); loadLog();
+    }catch{ toast("The flush got stuck. Check your connection and try again.", "var(--red)"); }
+    $("#gfGo").disabled=false; $("#gfGo").textContent="Flush it";
+  });
+
+  $("#settingsForm").addEventListener("submit", async e=>{
+    e.preventDefault(); if(!S.db) return;
+    const v=Math.min(60, Math.max(3, parseInt($("#overdueMin").value,10)||10));
+    try{ await S.db.doc("settings/main").set({ overdueMin:v }); toast(`Overdue warning set to ${v} minutes.`, "var(--green)"); }
+    catch{ toast("Couldn't save the setting.", "var(--red)"); }
+  });
+
+  $("#venueForm").addEventListener("submit", async e=>{
+    e.preventDefault(); const name=$("#vName").value.trim(), zone=$("#vZone").value.trim(); if(!name||!zone||!S.db) return;
+    const id=slug(name)+"-"+Math.random().toString(36).slice(2,6);
+    await S.db.doc("venues/"+id).set({ name, zone, block:$("#vBlock").value.trim(), order:Date.now() });
+    $("#vName").value=""; $("#vBlock").value=""; toast(`Added ${name} to ${zone}.`);
+  });
+  $("#venueAdmin").addEventListener("click", async e=>{ const u=e.target.closest("[data-up]"); if(u){ startUpload(u.dataset.up); return; } const b=e.target.closest("[data-del]"); if(!b) return; await S.db.doc("venues/"+b.dataset.del).delete(); });
+  function renderVenueAdmin(){
+    $("#venueAdmin").innerHTML = S.venues.map(v=>`<span class="vtag">${esc(v.name)} <span class="muted">· ${esc(zoneOf(v))}${v.block?" · "+esc(v.block):""}</span><button class="up" data-up="${esc(v.id)}" title="Upload class list">${(ss=>ss.length>1?`${ss.length} lists`:ss.length?`List (${ss[0].students.length})`:"Upload list")(sessionsOf(v.id))}</button><button data-del="${esc(v.id)}" aria-label="Remove ${esc(v.name)}">✕</button></span>`).join("");
+  }
+
+  // ---------- class lists ----------
+  function sessionsOf(id){
+    const l=S.lists[id]; if(!l) return [];
+    if(Array.isArray(l.sessions) && l.sessions.length) return l.sessions.slice().sort((a,b)=>((a.date||"")+(a.start||"")).localeCompare((b.date||"")+(b.start||"")));
+    return Array.isArray(l.students) ? [{ id:"list", subject:"Class list", students:l.students }] : [];
+  }
+  function sessTime(x, which){ return x && x.date && x[which] ? new Date(x.date+"T"+x[which]+":00").getTime() : null; }
+  function isNow(x){ const a=sessTime(x,"start"), b=sessTime(x,"end"), n=Date.now(); return !!(a && b && n>=a-15*60000 && n<=b+15*60000); }
+  function examDays(){ return [...new Set(S.venues.flatMap(v=>sessionsOf(v.id).map(x=>x.date).filter(Boolean)))].sort(); }
+  function viewDay(){
+    const days=examDays(); if(!days.length) return null;
+    if(S.dayPicked && days.includes(S.dayPicked)) return S.dayPicked;
+    return days.includes(dayKey()) ? dayKey() : (days.find(d=>d>dayKey()) || days[days.length-1]);
+  }
+  function daySessions(id){ const d=viewDay(); return sessionsOf(id).filter(x=>!x.date || !d || x.date===d); }
+  function dayLabel(iso){
+    const dt=new Date(iso+"T00:00:00"), sess=S.venues.map(v=>sessionsOf(v.id).find(x=>x.date===iso)).find(Boolean);
+    const m=sess&&sess.dateLabel&&sess.dateLabel.match(/Day \d+/);
+    return `${dt.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}${m?" · "+m[0]:""}${iso===dayKey()?" · today":""}`;
+  }
+  function renderDayRow(){
+    const days=examDays(), d=viewDay();
+    $("#dayBar").hidden = days.length<2;
+    $("#dayRow").innerHTML = days.map(x=>`<button class="stu-btn" data-day="${esc(x)}" aria-pressed="${x===d}">${esc(dayLabel(x))}</button>`).join("");
+  }
+  function autoSession(id){
+    const ss=daySessions(id); if(ss.length<2) return ss[0]||null;
+    return ss.find(isNow) || ss.find(x=>{ const a=sessTime(x,"start"); return a && a>Date.now(); }) || ss[ss.length-1];
+  }
+  function slotTime(x, hm){ return x && x.date ? new Date(x.date+"T"+hm+":00").getTime() : null; }
+  function slotNote(x, i){
+    const parts=[]; if(i===x.invig.length-1) parts.push("ends paper");
+    if(x.invig[i].note) parts.push(x.invig[i].note);
+    return parts.length ? ` <em>(${esc(parts.join("; "))})</em>` : "";
+  }
+  function dutyNow(x){
+    if(!x || !x.invig || !x.invig.length) return null;
+    const n=Date.now(), sl=x.invig;
+    let i=sl.findIndex(t=>n>=slotTime(x,t.from) && n<slotTime(x,t.to));
+    if(i<0) i = n<slotTime(x,sl[0].from) ? 0 : sl.length-1;
+    return { slot:sl[i], index:i, live: n>=slotTime(x,sl[i].from) && n<slotTime(x,sl[i].to) };
+  }
+  function activeSession(id){ const ss=daySessions(id); return ss.find(x=>x.id===S.sessPick[id]) || autoSession(id); }
+  let sessKey="";
+  setInterval(()=>{ const k=S.venues.map(v=>{ const x=autoSession(v.id); const d=dutyNow(x); return x?x.id+(isNow(x)?"*":"")+(d?d.index+(d.live?"L":""):""):""; }).join(); if(k!==sessKey){ sessKey=k; renderVenues(); } }, 60000);
+
+  function renderStudents(){
+    const v=S.venues.find(v=>v.id===S.picked), ss=v?daySessions(v.id):[], cur=v?activeSession(v.id):null;
+    $("#uploadBtn").disabled = !v || !S.db;
+    $("#uploadBtn").textContent = cur ? `Replace this list (${cur.students.length})` : "Upload class list";
+    $("#stuBox").hidden = !cur;
+    if(!cur) return;
+    $("#sessRow").hidden = ss.length<2;
+    $("#sessRow").innerHTML = ss.map(x=>`<button class="stu-btn" data-s="${esc(x.id)}" aria-pressed="${x.id===cur.id}">${x.start?`<span class="no">${esc(x.start.replace(":",""))}–${esc(x.end.replace(":",""))}</span>`:""}${esc(x.subject)}${isNow(x)?` <span class="chip free" style="padding:0 6px;font-size:.7rem">Now</span>`:""}</button>`).join("");
+    const l=S.lists[v.id];
+    $("#stuMeta").textContent = `Uploaded by ${l.updatedBy||"someone"}`;
+    $("#sessInfo").innerHTML = [esc(cur.dateLabel), cur.start?`<strong class="hl">${esc(cur.start)}–${esc(cur.end)}</strong>`:"", esc(cur.note), cur.endNote?`<strong class="hl">${esc(cur.endNote)}</strong>`:"", cur.invigilators?`Subject teachers: ${esc(cur.invigilators)}`:"", `${cur.students.length} students`].filter(Boolean).join(" · ");
+    const dn=dutyNow(cur);
+    $("#dutyRoster").innerHTML = dn ? `<span class="muted" style="font-size:.8rem">Invigilators</span>` + cur.invig.map((sl,i)=>`<div class="${i===dn.index&&dn.live?"now":""}"><span class="mono">${esc(sl.from)}–${esc(sl.to)}</span><span>${i===dn.index&&dn.live?"<b>":""}${esc(sl.names.join(", "))}${i===dn.index&&dn.live?"</b> · on duty now":""}${slotNote(cur,i)}</span></div>`).join("") : "";
+    const q=$("#stuSearch").value.trim().toLowerCase();
+    const rows=cur.students.filter(s=>!q || (s.name+" "+s.no+" "+(s.cls||"")).toLowerCase().includes(q));
+    $("#stuGrid").innerHTML = rows.length ? rows.map(s=>{ const k=cur.students.indexOf(s);
+      return `<button class="stu-btn" data-k="${k}" aria-pressed="${!!S.student && S.student.name===s.name && S.student.no===s.no}">${s.no?`<span class="no">${esc(s.no)}</span>`:""}${esc(s.name)}${s.cls?` <span class="no" style="margin:0 0 0 6px">${esc(s.cls)}</span>`:""}</button>`; }).join("")
+      : `<span class="muted" style="font-size:.85rem">No student matches that search.</span>`;
+  }
+  $("#stuSearch").addEventListener("input", renderStudents);
+  $("#dayRow").addEventListener("click", e=>{ const b=e.target.closest("[data-day]"); if(!b) return; S.dayPicked=b.dataset.day; S.student=null; renderVenues(); });
+  $("#sessRow").addEventListener("click", e=>{
+    const b=e.target.closest("[data-s]"); if(!b) return;
+    S.sessPick[S.picked]=b.dataset.s; S.student=null; renderStudents();
+  });
+  $("#stuGrid").addEventListener("click", e=>{
+    const b=e.target.closest("[data-k]"); if(!b) return;
+    const s=activeSession(S.picked).students[+b.dataset.k];
+    S.student = (S.student && S.student.name===s.name && S.student.no===s.no) ? null : s;
+    if(S.student){ S.gender=S.student.gender||""; document.querySelectorAll("#genderSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.g===S.gender)); }
+    renderStudents();
+  });
+
+  function startUpload(venueId){
+    if(!S.db) return;
+    S.upTarget=venueId; $("#fileIn").value=""; $("#fileIn").click();
+  }
+  $("#uploadBtn").addEventListener("click", ()=>startUpload(S.picked));
+
+  function loadSheetJS(){
+    if(window.XLSX) return Promise.resolve();
+    const load = src => new Promise((ok,fail)=>{ const sc=document.createElement("script"); sc.src=src; sc.onload=ok; sc.onerror=fail; document.head.appendChild(sc); });
+    return load("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js")
+      .catch(()=>load("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"));
+  }
+  function parseCSV(text){
+    const rows=[]; let row=[], cell="", q=false;
+    for(let i=0;i<text.length;i++){ const c=text[i];
+      if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+      else if(c==='"') q=true;
+      else if(c===","||c==="\t"||c===";"){ row.push(cell); cell=""; }
+      else if(c==="\n"){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(c!=="\r") cell+=c; }
+    row.push(cell); rows.push(row); return rows;
+  }
+  const normG = g => { g=String(g||"").trim().toLowerCase(); return /^(m|male|boy|b)$/.test(g)?"Boy":/^(f|female|girl|g)$/.test(g)?"Girl":""; };
+  function extract(rows){
+    rows=rows.map(r=>r.map(c=>String(c??"").trim())).filter(r=>r.some(Boolean));
+    if(!rows.length) return [];
+    let iName=-1,iNo=-1,iG=-1, start=0;
+    const hdr=rows[0].map(c=>c.toLowerCase());
+    if(hdr.some(c=>/name/.test(c))){
+      start=1;
+      iName=hdr.findIndex(c=>/name/.test(c));
+      iNo=hdr.findIndex(c=>/^(no\.?|s\/?n|index|reg|register|class ?no|#|number|idx)/.test(c));
+      iG=hdr.findIndex(c=>/gender|sex|^m\/f$|boy|girl/.test(c));
+    } else {
+      const r=rows[0];
+      if(r.length>=2 && /^\d+$/.test(r[0])){ iNo=0; iName=1; iG = r.length>2 ? 2 : -1; }
+      else { iName=0; iG = r.length>1 && normG(r[1]) ? 1 : -1; }
+    }
+    return rows.slice(start).map(r=>({ no: iNo>=0?r[iNo]||"":"", name:(r[iName]||"").replace(/\s+/g," "), gender: iG>=0?normG(r[iG]):"" }))
+      .filter(s=>s.name).slice(0,80);
+  }
+  $("#fileIn").addEventListener("change", async ()=>{
+    const f=$("#fileIn").files[0]; if(!f) return;
+    const v=S.venues.find(x=>x.id===S.upTarget); if(!v) return;
+    let rows;
+    try{
+      if(/\.xlsx?$/i.test(f.name)){
+        await loadSheetJS();
+        const wb=XLSX.read(await f.arrayBuffer(), {type:"array"});
+        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:false, defval:""});
+      } else rows=parseCSV(await f.text());
+    }catch{ toast("Couldn't read that file. Save it as .xlsx or .csv and try again.", "var(--red)"); return; }
+    const students=extract(rows);
+    if(!students.length){ toast("No student names found. Put names in a column headed Name.", "var(--red)"); return; }
+    S.upParsed={ venueId:v.id, students, fileName:f.name };
+    const nb=students.filter(s=>s.gender==="Boy").length, ng=students.filter(s=>s.gender==="Girl").length;
+    $("#upTitle").textContent=`Class list for ${v.name}`;
+    $("#upSummary").textContent=`Found ${students.length} students in ${f.name}${nb||ng?` (${nb} boys, ${ng} girls)`:""}.${(c=>c?` This replaces the ${c.subject} list of ${c.students.length}.`:"")(activeSession(v.id))}`;
+    $("#upRows").innerHTML=students.map(s=>`<tr><td class="num">${esc(s.no||"–")}</td><td>${esc(s.name)}</td><td>${esc(s.gender||"–")}</td></tr>`).join("");
+    const warn=[]; if(!nb && !ng) warn.push("No Boy/Girl column found, so teachers will choose it when sending.");
+    if(rows.length-1>80) warn.push("Only the first 80 names were kept.");
+    warn.push("Everyone with access to this page can see these names.");
+    $("#upWarn").textContent=warn.join(" ");
+    $("#upOverlay").hidden=false; $("#upSave").focus();
+  });
+  const closeUp=()=>{ $("#upOverlay").hidden=true; S.upParsed=null; };
+  $("#upCancel").addEventListener("click", closeUp);
+  $("#upOverlay").addEventListener("click", e=>{ if(e.target.id==="upOverlay") closeUp(); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("#upOverlay").hidden) closeUp(); });
+  $("#upSave").addEventListener("click", async ()=>{
+    const p=S.upParsed; if(!p) return;
+    $("#upSave").disabled=true;
+    try{
+      const l=S.lists[p.venueId], cur=activeSession(p.venueId);
+      if(l && Array.isArray(l.sessions) && l.sessions.length && cur){
+        const sessions=l.sessions.map(x=>x.id===cur.id?{...x, students:p.students}:x);
+        await S.db.doc("classlists/"+p.venueId).set({ ...l, sessions, fileName:p.fileName, updatedBy:myName()||"Admin", updatedAt:Date.now() });
+      } else await S.db.doc("classlists/"+p.venueId).set({ students:p.students, fileName:p.fileName, updatedBy:myName()||"Admin", updatedAt:Date.now() });
+      const v=S.venues.find(x=>x.id===p.venueId);
+      toast(`Saved ${p.students.length} students for ${v?v.name:"this venue"}.`, "var(--green)");
+      closeUp();
+    }catch{ toast("Couldn't save the class list. Try again.", "var(--red)"); }
+    $("#upSave").disabled=false;
+  });
+  $("#tplBtn").addEventListener("click", async ()=>{
+    const dl=await claude.use("downloads");
+    if(!dl){ toast("Downloads aren't available in this view.", "var(--amber)"); return; }
+    try{ await dl.save({ filename:"class-list-template.csv", data:"No,Name,Gender\n1,Example Student One,M\n2,Example Student Two,F\n" }); }
+    catch(e){ if(e?.code!=="declined") toast("Couldn't save the file.", "var(--red)"); }
+  });
+
+  // ---------- live data ----------
+  renderAll(); tick();
+  (async ()=>{
+    const db = await claude.use("db");
+    if(!db){ $("#offline").hidden=false; return; }
+    S.db=db; renderAll();
+
+    db.doc("settings/main").onSnapshot(s=>{ if(s.exists){ S.settings={overdueMin:10,...s.data()}; $("#overdueMin").value=S.settings.overdueMin; } renderAll(); }, ()=>{});
+    db.collection("venues").orderBy("order").onSnapshot(s=>{ S.venues=s.docs.map(d=>({id:d.id,...d.data()})); renderVenues(); renderVenueAdmin(); renderZoneSelect(); }, ()=>{});
+    db.collection("classlists").onSnapshot(s=>{ S.lists={}; s.docs.forEach(d=>S.lists[d.id]=d.data()); renderVenues(); renderVenueAdmin(); renderRoster(); }, ()=>{});
+    db.collection("squad").onSnapshot(s=>{
+      const first=!S.ready.squad; S.ready.squad=true;
+      if(!first) s.docChanges().forEach(c=>{ if(c.type==="added") toast(`${c.doc.data().name} joined the Flush Squad.`); });
+      S.squad=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name)); renderAll();
+    }, ()=>{});
+    let today=dayKey(), unsub=null;
+    function subRequests(){
+      unsub && unsub(); S.ready.req=false;
+      unsub = db.collection("requests").where("day","==",today).onSnapshot(s=>{
+        const first=!S.ready.req;
+        if(first) s.docs.forEach(d=>{ const r={id:d.id,...d.data()}; if(isOverdue(r)) S.warned.add(r.id); });
+        S.ready.req=true;
+        if(!first) s.docChanges().forEach(c=>{
+          const r=c.doc.data(); const prev=S.requests.find(x=>x.id===c.doc.id);
+          if(c.type==="added" && r.status==="waiting"){
+            const me=meOnDuty();
+            const zoneFree = S.squad.some(m=>m.status==="free" && m.zones && m.zones.length && m.zones.includes(r.zone));
+            const forMe = me && me.status==="free" && (covers(me, r.zone) || !zoneFree);
+            toast(`New request: ${r.venue} (${r.zone||"General"}) from ${r.requestedBy}${forMe?" · for you":""}`, "var(--red)");
+            if(meOnDuty()) chime(); else flushSound();
+            if(forMe){ $("#dutyCard").classList.remove("alert-flash"); void $("#dutyCard").offsetWidth; $("#dutyCard").classList.add("alert-flash"); }
+          }
+          if(c.type==="modified" && prev && prev.status==="waiting" && r.status==="claimed") toast(`${r.claimedBy} will do it: ${r.venue}`, "var(--amber)");
+          if(c.type==="modified" && prev && prev.status!=="done" && r.status==="done") toast(`${r.venue} student is back in class. ${r.claimedBy} is free again.`, "var(--green)");
+        });
+        S.requests=s.docs.map(d=>({id:d.id,...d.data()})); renderAll(); tick();
+        if(S.tab==="log" && $("#logDate").value===today){ logRows=S.requests.slice().sort((a,b)=>a.createdAt-b.createdAt); renderLog(); }
+      }, ()=>{});
+    }
+    subRequests();
+    setInterval(()=>{ if(dayKey()!==today){ today=dayKey(); subRequests(); } }, 60000);
+  })();
+})();
+</script>
