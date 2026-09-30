@@ -203,6 +203,22 @@ input[type=date],.field{padding:9px 10px;border:1px solid var(--line);border-rad
 body.tv .stu{display:none}
 
 /* overdue + zones */
+.urgent-bar{position:fixed;left:0;right:0;top:0;z-index:58;border:0;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--red);color:#fff;font:inherit;font-weight:800;font-size:1rem;text-align:center;cursor:pointer;animation:barBlink 1s steps(1) infinite;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.urgent-bar small{display:block;font-weight:600;font-size:.8rem;opacity:.95}
+.bar-poop{display:inline-block;font-size:1.5em;vertical-align:middle;margin-right:4px;animation:poopPulse .8s ease-in-out infinite}
+@keyframes poopPulse{0%,100%{transform:scale(.8)}50%{transform:scale(1.6)}}
+@keyframes barBlink{50%{background:#7a1d16}}
+.urgent-toggle{display:flex;align-items:center;gap:8px;width:100%;border:2px dashed var(--red);background:var(--surface);color:var(--red);border-radius:10px;padding:10px 12px;font:inherit;font-weight:800;cursor:pointer;text-align:left}
+.urgent-toggle[aria-pressed="true"]{border-style:solid;background:var(--red);color:#fff;animation:urgentPulse 1s ease-in-out infinite}
+.urgent-toggle .poop{font-size:1.4em}
+.item.urgent{border-color:var(--red);animation:urgentBlink 1s ease-in-out infinite}
+.item.urgent .stripe{background:var(--red)}
+.urgent-tag{display:inline-block;background:var(--red);color:#fff;border-radius:6px;padding:0 8px;font-size:.75em;letter-spacing:.06em;vertical-align:middle}
+.poop.pop{display:inline-block;font-size:1.3em;animation:poopPop 1.2s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes urgentBlink{0%,100%{box-shadow:0 0 0 2px var(--red) inset;background:var(--surface)}50%{box-shadow:0 0 0 4px var(--red) inset,0 0 18px color-mix(in srgb,var(--red) 45%,transparent);background:var(--red-soft)}}
+@keyframes urgentPulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--red) 50%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--red) 0%,transparent)}}
+@keyframes poopPop{0%,100%{transform:scale(1) translateY(0)}20%{transform:scale(1.35,.8) translateY(0)}40%{transform:scale(.9,1.2) translateY(-8px)}60%{transform:scale(1.1,.9) translateY(0)}}
+.remark{margin:4px 0 2px;padding:6px 10px;border-radius:8px;background:var(--amber-soft);color:var(--ink);font-size:.9rem;overflow-wrap:anywhere}
 .chip.overdue{background:var(--red);color:#fff}
 .item.overdue{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
 .item.overdue .stripe{background:var(--red)}
@@ -285,6 +301,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
           <div class="stat"><b id="statFree" class="mono">0</b><span>Squad free</span></div>
         </div>
         <div class="row" style="margin-top:18px"><button class="btn ghost" id="tvBtn">TV display for staff room</button><button class="btn ghost" id="soundBtn" aria-pressed="false">🔇 Turn on sound</button></div>
+        <p class="muted" id="soundInfo" style="margin:8px 0 0;font-size:.78rem"></p>
       </div>
     </div>
     <div class="legend">
@@ -357,6 +374,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
         <label for="zoneSel" class="muted" id="zoneLbl" style="font-size:.85rem">My zone</label>
         <select class="field" id="zoneSel"><option value="">All zones</option></select>
         <button class="btn" id="joinDuty">Join the squad</button>
+        <button class="btn ghost" id="notifBtn" hidden>🔔 Allow phone/computer notifications</button>
         <button class="btn ghost" id="leaveDuty" hidden>Go off duty</button>
       </div>
     </div>
@@ -385,7 +403,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
       </div>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Requested</th><th>Venue</th><th>Zone</th><th>Student</th><th>Requested by</th><th>Invigilator on duty</th><th>Escort</th><th>Wait</th><th>Escort time</th><th>Status</th></tr></thead>
+          <thead><tr><th>Requested</th><th>Venue</th><th>Zone</th><th>Student</th><th>Remarks</th><th>Requested by</th><th>Invigilator on duty</th><th>Escort</th><th>Wait</th><th>Escort time</th><th>Status</th></tr></thead>
           <tbody id="logBody"></tbody>
         </table>
       </div>
@@ -421,6 +439,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     </div>
   </section>
 </div>
+<button id="urgentBar" class="urgent-bar" hidden aria-live="assertive"></button>
 <div id="toasts" aria-live="polite"></div>
 <button id="soundPill" class="sound-pill" hidden>🔇 Tap here to turn on alert sounds</button>
 <div class="overlay" id="whoOverlay" hidden>
@@ -428,6 +447,11 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     <p class="eyebrow" id="whoEyebrow">Confirm request</p>
     <h3 id="whoTitle" style="font-size:1.3rem">Who is making this request?</h3>
     <p id="whoSub" class="muted" style="margin:0"></p>
+    <div style="display:grid;gap:6px">
+      <label for="whoRemark" style="font-weight:700">Any additional information <span class="muted" style="font-weight:400">(optional)</span></label>
+      <button type="button" class="urgent-toggle" id="whoUrgent" aria-pressed="false"><span class="poop" aria-hidden="true">💩</span> <span id="whoUrgentLabel">Mark as URGENT</span></button>
+      <textarea class="field" id="whoRemark" rows="2" maxlength="200" placeholder="e.g. Student feels unwell, needs the girls' toilet at Level 2, urgent" style="width:100%;resize:vertical;font:inherit"></textarea>
+    </div>
     <div id="whoAsk" style="display:grid;gap:10px">
       <p style="margin:0;font-size:1.05rem">The request is made by invigilator <strong id="whoInvig"></strong>?</p>
       <div class="row" id="whoYes"></div>
@@ -578,28 +602,110 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
         }catch{}
       }
       try{ silentEl && silentEl.play().catch(()=>{}); }catch{}
+      unlockClips();
     }catch{}
     setTimeout(()=>{ try{ renderSoundBtn(); }catch{} }, 300);
   }
-  function chime(notes=[880,1175,880]){
-    if(!actx || !soundOn) return;
-    try{
-      const t=actx.currentTime;
-      notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain();
-        o.frequency.value=f; o.type="sine"; g.gain.setValueAtTime(0,t+i*.18); g.gain.linearRampToValueAtTime(.25,t+i*.18+.02); g.gain.exponentialRampToValueAtTime(.001,t+i*.18+.16);
-        o.connect(g).connect(actx.destination); o.start(t+i*.18); o.stop(t+i*.18+.18); });
-    }catch{}
+  // ---------- sound engine ----------
+  // Each sound is drawn once into a short WAV clip and played with an <audio> element
+  // (works on iPhone silent mode and in stricter browsers). Web Audio is the backup.
+  const SYNTH = {
+    chime:[0.7,(c,t)=>tones(c,t,[880,1175,880])],
+    alarm:[0.9,(c,t)=>tones(c,t,[660,520,660,520])],
+    ding:[0.5,(c,t)=>tones(c,t,[660,880])],
+    hero:[1.7,(c,t)=>{
+      [[523,0,.12],[523,.14,.12],[523,.28,.12],[659,.42,.18],[784,.62,.14],[1047,.78,.7]].forEach(([f,o,len])=>{
+        ["square","triangle"].forEach((type,j)=>{
+          const os=c.createOscillator(), g=c.createGain();
+          os.type=type; os.frequency.setValueAtTime(f*(j?2:1),t+o);
+          if(len>.5){ const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=6; lg.gain.value=f*.012; lfo.connect(lg).connect(os.frequency); lfo.start(t+o); lfo.stop(t+o+len); }
+          const vol = j ? .05 : .11;
+          g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(vol,t+o+.015); g.gain.setValueAtTime(vol,t+o+len*.7); g.gain.exponentialRampToValueAtTime(.001,t+o+len);
+          os.connect(g).connect(c.destination); os.start(t+o); os.stop(t+o+len+.02);
+        });
+      });
+    }],
+    done:[1.3,(c,t)=>{
+      [[392,0,.1],[523,.1,.1],[659,.2,.1],[784,.3,.1],[659,.42,.1],[784,.52,.5]].forEach(([f,o,len])=>{
+        const os=c.createOscillator(), g=c.createGain();
+        os.type="triangle"; os.frequency.setValueAtTime(f,t+o);
+        g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(.2,t+o+.01); g.gain.exponentialRampToValueAtTime(.001,t+o+len);
+        os.connect(g).connect(c.destination); os.start(t+o); os.stop(t+o+len+.02);
+      });
+      [2093,2637,3136].forEach((f,i)=>{
+        const os=c.createOscillator(), g=c.createGain(), o=.55+i*.07;
+        os.type="sine"; os.frequency.value=f;
+        g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(.08,t+o+.01); g.gain.exponentialRampToValueAtTime(.001,t+o+.6);
+        os.connect(g).connect(c.destination); os.start(t+o); os.stop(t+o+.62);
+      });
+    }],
+    flush:[2.3,(c,t)=>{
+      const dur=2.2, sr=c.sampleRate, buf=c.createBuffer(1, Math.floor(sr*dur), sr), d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      const src=c.createBufferSource(); src.buffer=buf;
+      const bp=c.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=1.2;
+      bp.frequency.setValueAtTime(350,t); bp.frequency.exponentialRampToValueAtTime(1500,t+.5); bp.frequency.exponentialRampToValueAtTime(220,t+dur);
+      const g=c.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.7,t+.15); g.gain.setValueAtTime(.7,t+.9); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+      src.connect(bp).connect(g).connect(c.destination); src.start(t); src.stop(t+dur);
+      [0.9,1.15,1.35,1.6].forEach((o,i)=>{ const os=c.createOscillator(), og=c.createGain();
+        os.type="sine"; os.frequency.setValueAtTime(260-i*30,t+o); os.frequency.exponentialRampToValueAtTime(90,t+o+.14);
+        og.gain.setValueAtTime(0,t+o); og.gain.linearRampToValueAtTime(.2,t+o+.02); og.gain.exponentialRampToValueAtTime(.001,t+o+.16);
+        os.connect(og).connect(c.destination); os.start(t+o); os.stop(t+o+.18); });
+    }],
+  };
+  function tones(c,t,notes){
+    notes.forEach((f,i)=>{ const o=c.createOscillator(), g=c.createGain();
+      o.frequency.value=f; o.type="sine"; g.gain.setValueAtTime(0,t+i*.18); g.gain.linearRampToValueAtTime(.35,t+i*.18+.02); g.gain.exponentialRampToValueAtTime(.001,t+i*.18+.16);
+      o.connect(g).connect(c.destination); o.start(t+i*.18); o.stop(t+i*.18+.18); });
   }
-  const alarm = () => chime([660,520,660,520]);
-  ["click","touchend","keydown"].forEach(ev=>document.addEventListener(ev, ()=>{ if(soundOn && !audioReady()) unlockAudio(); }, {capture:true, passive:true}));
+  const CLIPS={}; let mediaUnlocked=false, clipsReady=false;
+  function wavBlob(ab){
+    const ch=ab.getChannelData(0), n=ch.length, sr=ab.sampleRate, buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+    const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+    w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVE"); w(12,"fmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++){ const x=Math.max(-1,Math.min(1,ch[i])); v.setInt16(44+i*2, x<0?x*0x8000:x*0x7FFF, true); }
+    return new Blob([buf],{type:"audio/wav"});
+  }
+  (async function prerender(){
+    const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!OAC) return;
+    for(const [name,[dur,fn]] of Object.entries(SYNTH)){
+      try{
+        const sr=22050, oc=new OAC(1, Math.ceil(sr*dur), sr); fn(oc,0);
+        const ab=await oc.startRendering();
+        const el=new Audio(URL.createObjectURL(wavBlob(ab))); el.preload="auto"; el.setAttribute("playsinline","");
+        CLIPS[name]=el;
+      }catch{}
+    }
+    clipsReady=Object.keys(CLIPS).length>0;
+  })();
+  function unlockClips(){
+    Object.values(CLIPS).forEach(el=>{
+      try{ el.muted=true; const p=el.play(); if(p&&p.then) p.then(()=>{ el.pause(); el.currentTime=0; el.muted=false; mediaUnlocked=true; renderSoundBtn(); }).catch(()=>{ el.muted=false; }); }catch{}
+    });
+  }
+  function webPlay(name){
+    try{ if(!actx) return; if(actx.state!=="running") actx.resume(); SYNTH[name][1](actx, actx.currentTime); }catch{}
+  }
+  function play(name){
+    if(!soundOn) return;
+    const el=CLIPS[name];
+    if(el && mediaUnlocked){
+      try{ el.pause(); el.currentTime=0; el.muted=false; el.volume=1; const p=el.play(); if(p&&p.catch) p.catch(()=>webPlay(name)); return; }catch{}
+    }
+    webPlay(name);
+  }
+  const chime = ()=>play("chime"), alarm = ()=>play("alarm"), heroSound = ()=>play("hero"), doneSound = ()=>play("done"), flushSound = ()=>play("flush");
+  ["click","touchend","keydown"].forEach(ev=>document.addEventListener(ev, ()=>{ if(soundOn && (!audioReady() || (clipsReady && !mediaUnlocked))) unlockAudio(); }, {capture:true, passive:true}));
   document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible" && actx && actx.state!=="running"){ try{ actx.resume(); }catch{} } setTimeout(()=>{ try{ renderSoundBtn(); }catch{} },300); });
   let soundOn = store.get("fsc.sound")!=="off";
-  const audioReady = () => !!actx && actx.state==="running";
+  const audioReady = () => mediaUnlocked || (!!actx && actx.state==="running");
   function renderSoundBtn(){
     const on = soundOn && audioReady();
     $("#soundBtn").setAttribute("aria-pressed", on);
     $("#soundBtn").textContent = on ? "🔊 Sound on" : "🔇 Turn on sound";
     $("#soundPill").hidden = !soundOn || audioReady();
+    $("#soundInfo").textContent = `App version 2026-10-02c · sound: ${!soundOn?"muted":mediaUnlocked?"on (clips)":audioReady()?"on (synth)":"waiting for a tap"}`;
   }
   $("#soundBtn").addEventListener("click", async ()=>{
     unlockAudio(); try{ await actx.resume(); }catch{}
@@ -608,63 +714,10 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     store.set("fsc.sound", soundOn?"on":"off"); renderSoundBtn();
   });
   setInterval(renderSoundBtn, 3000);
-  $("#soundPill").addEventListener("click", ()=>{ soundOn=true; store.set("fsc.sound","on"); unlockAudio(); setTimeout(()=>{ if(audioReady()){ chime([660,880]); toast("Sound is on. Keep this page open to hear alerts.", "var(--green)", 3500); } renderSoundBtn(); }, 250); });
-  function heroSound(){
-    if(!actx || !soundOn) return;
-    try{
-      const t=actx.currentTime;
-      // "da-da-da-DAAA!" superhero fanfare
-      [[523,0,.12],[523,.14,.12],[523,.28,.12],[659,.42,.18],[784,.62,.14],[1047,.78,.7]].forEach(([f,o,len])=>{
-        ["square","triangle"].forEach((type,j)=>{
-          const os=actx.createOscillator(), g=actx.createGain();
-          os.type=type; os.frequency.setValueAtTime(f*(j?2:1),t+o);
-          if(len>.5){ const lfo=actx.createOscillator(), lg=actx.createGain(); lfo.frequency.value=6; lg.gain.value=f*.012; lfo.connect(lg).connect(os.frequency); lfo.start(t+o); lfo.stop(t+o+len); }
-          const vol = j ? .05 : .11;
-          g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(vol,t+o+.015); g.gain.setValueAtTime(vol,t+o+len*.7); g.gain.exponentialRampToValueAtTime(.001,t+o+len);
-          os.connect(g).connect(actx.destination); os.start(t+o); os.stop(t+o+len+.02);
-        });
-      });
-    }catch{}
-  }
-  function doneSound(){
-    if(!actx || !soundOn) return;
-    try{
-      const t=actx.currentTime;
-      // "mission complete" jingle: bouncy run up, then a sparkly ding
-      [[392,0,.1],[523,.1,.1],[659,.2,.1],[784,.3,.1],[659,.42,.1],[784,.52,.5]].forEach(([f,o,len])=>{
-        const os=actx.createOscillator(), g=actx.createGain();
-        os.type="triangle"; os.frequency.setValueAtTime(f,t+o);
-        g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(.2,t+o+.01); g.gain.exponentialRampToValueAtTime(.001,t+o+len);
-        os.connect(g).connect(actx.destination); os.start(t+o); os.stop(t+o+len+.02);
-      });
-      [2093,2637,3136].forEach((f,i)=>{
-        const os=actx.createOscillator(), g=actx.createGain(), o=.55+i*.07;
-        os.type="sine"; os.frequency.value=f;
-        g.gain.setValueAtTime(0,t+o); g.gain.linearRampToValueAtTime(.08,t+o+.01); g.gain.exponentialRampToValueAtTime(.001,t+o+.6);
-        os.connect(g).connect(actx.destination); os.start(t+o); os.stop(t+o+.62);
-      });
-    }catch{}
-  }
-  function flushSound(){
-    if(!actx || !soundOn) return;
-    try{
-      const t=actx.currentTime, dur=2.2, sr=actx.sampleRate;
-      const buf=actx.createBuffer(1, sr*dur, sr), d=buf.getChannelData(0);
-      for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-      const src=actx.createBufferSource(); src.buffer=buf;
-      const bp=actx.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=1.2;
-      bp.frequency.setValueAtTime(350,t); bp.frequency.exponentialRampToValueAtTime(1500,t+.5); bp.frequency.exponentialRampToValueAtTime(220,t+dur);
-      const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.55,t+.15); g.gain.setValueAtTime(.55,t+.9); g.gain.exponentialRampToValueAtTime(.001,t+dur);
-      src.connect(bp).connect(g).connect(actx.destination); src.start(t); src.stop(t+dur);
-      [0.9,1.15,1.35,1.6].forEach((o,i)=>{ const os=actx.createOscillator(), og=actx.createGain();
-        os.type="sine"; os.frequency.setValueAtTime(260-i*30,t+o); os.frequency.exponentialRampToValueAtTime(90,t+o+.14);
-        og.gain.setValueAtTime(0,t+o); og.gain.linearRampToValueAtTime(.18,t+o+.02); og.gain.exponentialRampToValueAtTime(.001,t+o+.16);
-        os.connect(og).connect(actx.destination); os.start(t+o); os.stop(t+o+.18); });
-    }catch{}
-  }
+  $("#soundPill").addEventListener("click", ()=>{ soundOn=true; store.set("fsc.sound","on"); unlockAudio(); setTimeout(()=>{ if(audioReady()){ play("ding"); toast("Sound is on. Keep this page open to hear alerts.", "var(--green)", 3500); } renderSoundBtn(); }, 250); });
 
   // ---------- derived ----------
-  const active = () => S.requests.filter(r=>r.status==="waiting"||r.status==="claimed").sort((a,b)=>a.createdAt-b.createdAt);
+  const active = () => S.requests.filter(r=>r.status==="waiting"||r.status==="claimed").sort((a,b)=>(b.urgent?1:0)-(a.urgent?1:0) || a.createdAt-b.createdAt);
   const meOnDuty = () => S.squad.find(m=>m.id===slug(myName()||"~"));
   const lightLevel = n => n>5?"red":n>=3?"amber":"green";
 
@@ -694,8 +747,10 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
   function itemHTML(r, actions, myZone){
     const who = r.gender ? ` · ${esc(r.gender)}` : "";
     const z = r.zone ? `<span class="zone${myZone?" mine":""}">${esc(r.zone)}${myZone?" · your zone":""}</span> ` : "";
-    return `<div class="item ${r.status}${isOverdue(r)?" overdue":""}" data-id="${esc(r.id)}"><div class="stripe"></div>
-      <div><h3>${esc(r.venue)}${r.block?` <span class="muted" style="font-weight:600;font-size:.85rem">${esc(r.block)}</span>`:""}</h3>
+    const urg = r.urgent && (r.status==="waiting"||r.status==="claimed");
+    return `<div class="item ${r.status}${isOverdue(r)?" overdue":""}${urg?" urgent":""}" data-id="${esc(r.id)}"><div class="stripe"></div>
+      <div><h3>${urg?`<span class="poop pop" aria-hidden="true">💩</span> <span class="urgent-tag">URGENT</span> `:""}${esc(r.venue)}${r.block?` <span class="muted" style="font-weight:600;font-size:.85rem">${esc(r.block)}</span>`:""}</h3>
+      ${r.remark?`<div class="remark stu">📝 ${esc(r.remark)}</div>`:""}
       <div class="meta">${z}${statusChip(r)} &nbsp;${r.student?`<b class="stu">${esc(r.student)}${r.studentClass?` (${esc(r.studentClass)})`:""}</b> · `:""}${r.invigilator?`Invigilator ${esc(r.invigilator)} · `:""}Requested by ${esc(r.requestedBy)}${who} · <span class="mono">${hhmm(r.createdAt)}</span></div></div>
       ${actions?`<div class="actions">${actions}</div>`:""}</div>`;
   }
@@ -747,7 +802,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
       : `<span class="chipwrap ${m.status}"><button class="chip pick ${m.status}${m.name===myName()?" me":""}" data-me="${esc(m.name)}" title="Tap if this is you">${m.name===myName()?"✓ ":`<span class="dot"></span>`}${esc(m.name)} · ${m.status==="busy"?"Busy":"Free"} · ${esc(m.zones&&m.zones.length?m.zones.join(", "):"All zones")}</button><button class="chip-x" data-rm="${esc(m.id)}" aria-label="Remove ${esc(m.name)} from the squad" title="Remove from squad">✕</button></span>`)).join("")
       : `<span class="muted">Nobody is on duty yet.</span>`;
     const busy = me && me.status==="busy";
-    const act=active().sort((a,b)=> (me? (covers(me,b.zone)?1:0)-(covers(me,a.zone)?1:0) : 0) || a.createdAt-b.createdAt);
+    const act=active().sort((a,b)=> (b.urgent?1:0)-(a.urgent?1:0) || (me? (covers(me,b.zone)?1:0)-(covers(me,a.zone)?1:0) : 0) || a.createdAt-b.createdAt);
     $("#squadReqs").innerHTML = act.length ? act.map(r=>{
       const a = r.status==="waiting" ? `<button class="btn warn" data-claim="${esc(r.id)}" ${(!me||busy)?"disabled":""}>I will do it</button>` : "";
       return itemHTML(r, a, me && me.zones && me.zones.length && covers(me, r.zone));
@@ -792,9 +847,12 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
       $("#whoYes").innerHTML = pendingInvig.map((n,i)=>`<button class="btn go" data-yes="${i}">${pendingInvig.length>1?`Yes, I'm ${esc(n)}`:"Yes"}</button>`).join("");
     }
     $("#whoName").value = myName() && !pendingInvig.includes(myName()) ? myName() : "";
+    $("#whoRemark").value=""; setUrgent(false);
     $("#whoOverlay").hidden=false;
     (pendingInvig.length ? $("#whoYes button") : $("#whoName")).focus();
   }
+  function setUrgent(on){ $("#whoUrgent").setAttribute("aria-pressed", on); $("#whoUrgentLabel").textContent = on ? "URGENT: goes to the top of the line (tap to undo)" : "Mark as URGENT"; }
+  $("#whoUrgent").addEventListener("click", ()=>setUrgent($("#whoUrgent").getAttribute("aria-pressed")!=="true"));
   const closeWho = ()=>{ $("#whoOverlay").hidden=true; };
   $("#whoYes").addEventListener("click", e=>{ const b=e.target.closest("[data-yes]"); if(!b) return; closeWho(); sendRequest(pendingInvig[+b.dataset.yes], true); });
   $("#whoNo").addEventListener("click", ()=>{ $("#whoAsk").hidden=true; $("#whoForm").hidden=false; $("#whoName").focus(); });
@@ -812,7 +870,7 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     try{
       await S.db.collection("requests").add({ venue:v.name, zone:zoneOf(v), block:v.block||"", gender:S.gender,
         student:S.student?S.student.name:"", studentNo:S.student?S.student.no:"", studentClass:S.student?(S.student.cls||""):"",
-        subject:(cur||{}).subject||"", invigilator:((dutyNow(cur)||{}).slot||{names:[]}).names.join(", "), byInvigilator:!!byInvigilator,
+        subject:(cur||{}).subject||"", invigilator:((dutyNow(cur)||{}).slot||{names:[]}).names.join(", "), byInvigilator:!!byInvigilator, urgent:$("#whoUrgent").getAttribute("aria-pressed")==="true", remark:($("#whoRemark").value||"").trim().slice(0,200),
         requestedBy:by, createdAt:Date.now(), day:dayKey(), status:"waiting", claimedBy:null, claimedAt:null, endedAt:null });
       toast(`Request sent for ${v.name}. The Flush Squad has been alerted.`, "var(--green)");
       S.picked=null; S.student=null; $("#venueSearch").value=""; $("#stuSearch").value="";
@@ -903,17 +961,17 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     $("#kTotal").textContent=rows.length; $("#kResp").textContent=mins(avg(resp)); $("#kDur").textContent=mins(avg(dur));
     $("#kTop").textContent= top?`${top[0]} (${top[1]})`:"–";
     const long = r => r.endedAt&&r.claimedAt && r.endedAt-r.claimedAt > overdueMs();
-    $("#logBody").innerHTML = rows.length ? rows.map(r=>`<tr><td class="num">${hhmm(r.createdAt)}</td><td>${esc(r.venue)}</td><td>${esc(r.zone||"–")}</td><td>${esc([r.student,r.gender].filter(Boolean).join(" · ")||"–")}</td><td>${esc(r.requestedBy)}${r.byInvigilator?` <span class="chip free" style="padding:0 6px;font-size:.7rem">Invigilator</span>`:""}</td><td>${esc(r.invigilator||"–")}</td><td>${esc(r.claimedBy||"–")}</td>
+    $("#logBody").innerHTML = rows.length ? rows.map(r=>`<tr><td class="num">${hhmm(r.createdAt)}</td><td>${esc(r.venue)}</td><td>${esc(r.zone||"–")}</td><td>${esc([r.student,r.gender].filter(Boolean).join(" · ")||"–")}</td><td style="white-space:normal;min-width:160px">${r.urgent?`<span class="urgent-tag">URGENT</span> `:""}${esc(r.remark||(r.urgent?"":"–"))}</td><td>${esc(r.requestedBy)}${r.byInvigilator?` <span class="chip free" style="padding:0 6px;font-size:.7rem">Invigilator</span>`:""}</td><td>${esc(r.invigilator||"–")}</td><td>${esc(r.claimedBy||"–")}</td>
       <td class="num">${r.claimedAt?mins(r.claimedAt-r.createdAt):"–"}</td><td class="num"${long(r)?' style="color:var(--red);font-weight:700"':""}>${r.endedAt&&r.claimedAt?mins(r.endedAt-r.claimedAt):"–"}</td><td>${statusChip(r)}</td></tr>`).join("")
-      : `<tr><td colspan="10" class="muted" style="text-align:center;padding:18px">No requests on this day.</td></tr>`;
+      : `<tr><td colspan="11" class="muted" style="text-align:center;padding:18px">No requests on this day.</td></tr>`;
   }
   $("#logDate").addEventListener("change", ()=>{ S.rosterDay=$("#logDate").value; loadLog(); });
   $("#rosterDays").addEventListener("click", e=>{ const b=e.target.closest("[data-day]"); if(!b) return; S.rosterDay=b.dataset.day; renderRoster(); });
   $("#csvBtn").addEventListener("click", async ()=>{
     const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-    const lines=[["Date","Requested","Venue","Zone","Level / note","Student","Class","Reg no.","Subject","Boy/Girl","Requested by","Requested by invigilator?","Invigilator on duty","Escort","Claimed","Ended","Wait (s)","Escort time (s)","Over limit","Status"].join(",")];
+    const lines=[["Date","Requested","Venue","Zone","Level / note","Student","Class","Reg no.","Subject","Boy/Girl","Urgent","Remarks","Requested by","Requested by invigilator?","Invigilator on duty","Escort","Claimed","Ended","Wait (s)","Escort time (s)","Over limit","Status"].join(",")];
     logRows.forEach(r=>{ const esc_s = r.endedAt&&r.claimedAt?Math.round((r.endedAt-r.claimedAt)/1000):"";
-      lines.push([r.day,hhmm(r.createdAt),r.venue,r.zone,r.block,r.student,r.studentClass,r.studentNo,r.subject,r.gender,r.requestedBy,r.byInvigilator?"Yes":"No",r.invigilator,r.claimedBy,hhmm(r.claimedAt),hhmm(r.endedAt),
+      lines.push([r.day,hhmm(r.createdAt),r.venue,r.zone,r.block,r.student,r.studentClass,r.studentNo,r.subject,r.gender,r.urgent?"Yes":"No",r.remark,r.requestedBy,r.byInvigilator?"Yes":"No",r.invigilator,r.claimedBy,hhmm(r.claimedAt),hhmm(r.endedAt),
       r.claimedAt?Math.round((r.claimedAt-r.createdAt)/1000):"", esc_s, esc_s!=="" && esc_s*1000>overdueMs()?"Yes":"", r.status].map(q).join(",")); });
     const dl=await claude.use("downloads");
     if(!dl){ toast("Downloads aren't available in this view.", "var(--amber)"); return; }
@@ -1159,6 +1217,35 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
     toast(fail ? `Imported ${n} records; ${fail} failed. Try again.` : `Imported ${nv} venues and ${nl} class lists.`, fail?"var(--amber)":"var(--green)", 5000);
   });
 
+  // ---------- urgent: repeat every 2 seconds until someone takes it ----------
+  const canNotify = () => { try{ return "Notification" in window && Notification.permission==="granted"; }catch{ return false; } };
+  function renderNotifBtn(){
+    let show=false; try{ show = "Notification" in window && Notification.permission==="default" && !!meOnDuty(); }catch{}
+    $("#notifBtn").hidden=!show;
+  }
+  $("#notifBtn").addEventListener("click", async ()=>{
+    try{ const r=await Notification.requestPermission(); toast(r==="granted"?"Notifications are on.":"Notifications weren't allowed. Sound and on-screen alerts still work.", r==="granted"?"var(--green)":"var(--amber)"); }catch{ toast("This browser can't show notifications here. Sound and on-screen alerts still work.", "var(--amber)"); }
+    renderNotifBtn();
+  });
+  function systemNotify(r){
+    if(!canNotify()) return;
+    try{ new Notification("💩 URGENT toilet escort: "+r.venue, { body:`${r.student?r.student+" · ":""}${r.remark||"Waiting for a Flush Squad teacher"}`, tag:"urgent-"+r.id, renotify:true, requireInteraction:true }); }catch{}
+  }
+  $("#urgentBar").addEventListener("click", ()=>setTab(meOnDuty()?"squad":"board"));
+  setInterval(()=>{
+    renderNotifBtn();
+    if(!S.ready.req) return;
+    const u=active().filter(r=>r.urgent && r.status==="waiting");
+    $("#urgentBar").hidden=!u.length;
+    if(!u.length) return;
+    const r=u[0];
+    const html=`<span class="bar-poop" aria-hidden="true">💩</span> URGENT: ${esc(r.venue)} needs a toilet escort now${u.length>1?` (+${u.length-1} more)`:""}<small>Waiting ${minsSince(r.createdAt)} min · ${meOnDuty()?"tap here, then press I will do it":"a Flush Squad teacher must press I will do it"}</small>`;
+    if($("#urgentBar").dataset.html!==html){ $("#urgentBar").innerHTML=html; $("#urgentBar").dataset.html=html; }
+    alarm();
+    try{ navigator.vibrate && navigator.vibrate([250,120,250]); }catch{}
+    u.forEach(systemNotify);
+  }, 2000);
+
   // ---------- live data ----------
   renderAll(); tick();
   (async ()=>{
@@ -1187,8 +1274,8 @@ body.tv #tvClock{display:block;font-family:var(--mono);font-size:1.6rem;color:va
             const me=meOnDuty();
             const zoneFree = S.squad.some(m=>m.status==="free" && m.zones && m.zones.length && m.zones.includes(r.zone));
             const forMe = me && me.status==="free" && (covers(me, r.zone) || !zoneFree);
-            toast(`New request: ${r.venue} (${r.zone||"General"}) from ${r.requestedBy}${forMe?" · for you":""}`, "var(--red)");
-            if(meOnDuty()) chime(); else flushSound();
+            toast(`${r.urgent?"💩 URGENT! ":"New request: "}${r.venue} (${r.zone||"General"}) from ${r.requestedBy}${forMe?" · for you":""}`, "var(--red)", r.urgent?10000:6000);
+            if(r.urgent) alarm(); else if(meOnDuty()) chime(); else flushSound();
             if(forMe){ $("#dutyCard").classList.remove("alert-flash"); void $("#dutyCard").offsetWidth; $("#dutyCard").classList.add("alert-flash"); }
           }
           if(c.type==="modified" && prev && prev.status==="waiting" && r.status==="claimed") toast(`${r.claimedBy} will do it: ${r.venue}`, "var(--amber)");
